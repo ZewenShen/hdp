@@ -1,4 +1,6 @@
 import numpy as np
+from math import sqrt
+import random
 class GBM:
     """
     Multi-asset geometric brownian motion simulation
@@ -27,14 +29,27 @@ class GBM:
             for i in range(1, self.N+1):
                 dW = np.zeros(self.asset_num)
                 for k in range(self.asset_num):
-                    normal = np.random.normal(size=k+1)
                     for j in range(k+1):
-                        dW[k] += L[k, j]*normal[j]
-                    dW[k] *= self.dt**0.5
+                        dW[k] += L[k, j]*random.normalvariate(0, 1)
+                    dW[k] *= sqrt(self.dt)
                 sim[:, i] = np.multiply(1 + self.dt*drift_vec, sim[:, i-1]) + np.multiply(np.multiply(self.vol_vec, sim[:, i-1]), dW)
             simulations.append(sim)
-        return simulations if len(simulations) > 1 else simulations[0]
-
+        return simulations
+    
+    def simulate1d(self, M):
+        """
+        M: total simulation number
+        """
+        simulations = []
+        drift_vec = self.ir_vec[0] - self.dividend_vec[0]
+        for _ in range(M):
+            sim = np.zeros(self.N+1)
+            sim[0] = self.init_price_vec[0]
+            for i in range(1, self.N+1):
+                dW = np.random.normal() * sqrt(self.dt)
+                sim[i] = (1 + self.dt*drift_vec)*sim[i-1] + self.vol_vec[0] * sim[i-1] * dW
+            simulations.append(sim)
+        return simulations
 
 
 if __name__ == "__main__":
