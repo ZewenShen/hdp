@@ -8,6 +8,7 @@ class GBM:
     def __init__(self, T, N, init_price_vec, ir_vec, vol_vec, dividend_vec, corr_mat):
         assert len(init_price_vec) == len(ir_vec) == len(vol_vec) == len(dividend_vec) == corr_mat.shape[0] == corr_mat.shape[1], "Vectors' lengths are different"
         self.dt = T/N
+        self.T = T
         self.N = N
         self.init_price_vec = init_price_vec
         self.ir_vec = ir_vec
@@ -30,27 +31,11 @@ class GBM:
                 dW = np.zeros(self.asset_num)
                 for k in range(self.asset_num):
                     for j in range(k+1):
-                        dW[k] += L[k, j]*random.normalvariate(0, 1)
+                        dW[k] += L[k, j]*np.random.normal()
                     dW[k] *= sqrt(self.dt)
                 sim[:, i] = np.multiply(1 + self.dt*drift_vec, sim[:, i-1]) + np.multiply(np.multiply(self.vol_vec, sim[:, i-1]), dW)
             simulations.append(sim)
         return simulations
-    
-    def simulate1d(self, M):
-        """
-        M: total simulation number
-        """
-        simulations = []
-        drift_vec = self.ir_vec[0] - self.dividend_vec[0]
-        for _ in range(M):
-            sim = np.zeros(self.N+1)
-            sim[0] = self.init_price_vec[0]
-            for i in range(1, self.N+1):
-                dW = np.random.normal() * sqrt(self.dt)
-                sim[i] = (1 + self.dt*drift_vec)*sim[i-1] + self.vol_vec[0] * sim[i-1] * dW
-            simulations.append(sim)
-        return simulations
-
 
 if __name__ == "__main__":
     init_price_vec = np.ones(5)

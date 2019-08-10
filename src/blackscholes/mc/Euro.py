@@ -18,7 +18,7 @@ class Euro:
         last_price = list(map(lambda x: x[:, -1], self.simulation_result))
         # last_price = list(map(lambda x: x[-1], self.simulation_result))
         payoff = list(map(self.payoff_func, last_price))
-        return np.mean(payoff)
+        return np.mean(payoff) * np.exp(-self.random_walk.ir_vec[0] * self.random_walk.T)
 
 if __name__ == "__main__":
     sys.path.append(os.path.dirname(os.path.abspath(__file__))+'/../../')
@@ -31,6 +31,6 @@ if __name__ == "__main__":
     random_walk = GBM(3, 100, init_price_vec, ir_vec, vol_vec, dividend_vec, corr_mat)
     def test_payoff(*l):
         return max(np.sum(l) - 5, 0)
-    a = Euro(test_payoff, random_walk).price(1000)
+    a = Euro(test_payoff, random_walk).price(10000)
     print(a)
     

@@ -16,7 +16,7 @@ class Test(unittest.TestCase):
         ir_vec = 0.03*np.ones(asset_num)
         dividend_vec = np.zeros(asset_num)
         corr_mat = np.eye(asset_num)
-        random_walk = GBM(1, 1000, init_price_vec, ir_vec, vol_vec, dividend_vec, corr_mat)
+        random_walk = GBM(1, 400, init_price_vec, ir_vec, vol_vec, dividend_vec, corr_mat)
 
         def test_payoff(*l):
             return max(strike - np.sum(l), 0)
@@ -32,7 +32,7 @@ class Test(unittest.TestCase):
         
     def test_price1d(self):
         real_call, real_put = self.analytical1.european_option_price()
-        approx_put = self.opt1.price(50000)
+        approx_put = self.opt1.price(25000)
         print(approx_put, real_put)
 
 
