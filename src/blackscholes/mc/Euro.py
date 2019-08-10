@@ -1,4 +1,3 @@
-import sys, os
 import numpy as np
 
 class Euro:
@@ -13,16 +12,17 @@ class Euro:
         self.payoff_func = payoff_func
         self.random_walk = random_walk
 
-    def price(self, path_num):
+    def price(self, path_num=1000):
         self.simulation_result = self.random_walk.simulate(path_num)
         last_price = list(map(lambda x: x[:, -1], self.simulation_result))
-        # last_price = list(map(lambda x: x[-1], self.simulation_result))
         payoff = list(map(self.payoff_func, last_price))
         return np.mean(payoff) * np.exp(-self.random_walk.ir_vec[0] * self.random_walk.T)
 
 if __name__ == "__main__":
+    import sys, os
     sys.path.append(os.path.dirname(os.path.abspath(__file__))+'/../../')
     from blackscholes.utils.GBM import GBM
+
     init_price_vec = np.ones(5)
     vol_vec = 0.2*np.ones(5)
     ir_vec = 0.00*np.ones(5)

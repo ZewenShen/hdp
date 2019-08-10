@@ -32,7 +32,7 @@ class Test(unittest.TestCase):
         
     def test_price1d(self):
         real_call, real_put = self.analytical1.european_option_price()
-        approx_put = self.opt1.price(25000)
+        approx_put = self.opt1.price(5000)
         print(approx_put, real_put)
 
 
