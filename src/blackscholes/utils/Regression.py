@@ -14,7 +14,7 @@ class Monomial_Basis:
 
     def __init__(self, chi, dimension):
         permutations = Monomial_Basis._get_all_permutations(chi, dimension)
-        self.monomials = list(map(lambda x: Monomial(x), permutations))
+        self.monomials = [Monomial(x) for x in permutations]
     
     @staticmethod
     def _get_all_permutations(chi, dimension):
@@ -25,12 +25,11 @@ class Monomial_Basis:
         else:
             results = []
             for i in range(chi+1):
-                result = map(lambda x: [i] + x, Monomial_Basis._get_all_permutations(chi - i, dimension-1))
-                results += list(result)
+                results += [[i] + x for x in Monomial_Basis._get_all_permutations(chi - i, dimension-1)]
             return results
     
     def evaluate(self, X):
-        return np.array(list(map(lambda m: m.evaluate(X), self.monomials)))
+        return np.array([m.evaluate(X) for m in self.monomials])
 
 class Regression:
 
@@ -40,10 +39,10 @@ class Regression:
         self.dimension = len(X_mat[0])
         self.basis = Monomial_Basis(chi, self.dimension)
         
-        index = [i for i in range(len(X_mat)) if payoff_func(X_mat[i]) > 0]
-        target_X, target_Y = X_mat[index], Y[index]
+        self.index = [i for i in range(len(X_mat)) if payoff_func(X_mat[i]) > 0]
+        target_X, target_Y = X_mat[self.index], Y[self.index]
 
-        target_matrix_A = np.array(list(map(lambda x: self.basis.evaluate(x), target_X)))
+        target_matrix_A = np.array([self.basis.evaluate(x) for x in target_X])
         self.coefficients = np.linalg.lstsq(target_matrix_A, target_Y, rcond=None)[0]
 
     def evaluate(self, X):

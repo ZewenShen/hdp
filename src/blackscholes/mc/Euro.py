@@ -14,7 +14,7 @@ class Euro:
 
     def price(self, path_num=1000):
         self.simulation_result = self.random_walk.simulate(path_num)
-        last_price = list(map(lambda x: x[:, -1], self.simulation_result))
+        last_price = [x[:, -1] for x in self.simulation_result]
         payoff = list(map(self.payoff_func, last_price))
         return np.mean(payoff) * np.exp(-self.random_walk.ir * self.random_walk.T)
 

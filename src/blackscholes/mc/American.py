@@ -19,7 +19,7 @@ class American:
         self.simulation_result = self.random_walk.simulate(path_num)
 
         cashflow_matrix = np.zeros([path_num, self.random_walk.N+1])
-        cur_price = list(map(lambda x: x[:, -1], self.simulation_result))
+        cur_price = [x[:, -1] for x in self.simulation_result]
         cur_payoff = list(map(self.payoff_func, cur_price))
         cashflow_matrix[:, self.random_walk.N] = cur_payoff
 
@@ -28,6 +28,7 @@ class American:
             # Compute the discounted payoff
             r = Regression(self.simulation_result[:, :, t], discounted_cashflow, payoff_func=self.payoff_func)
             cur_price = list(map(lambda x: x[:, t], self.simulation_result))
+            cur_price = [x[:, t] for x in self.simulation_result]
             cur_payoff = list(map(self.payoff_func, cur_price))
 
     def _get_discounted_cash_flow(self, t, cashflow_matrix, path_num):
