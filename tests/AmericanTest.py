@@ -7,7 +7,7 @@ import numpy as np
 
 class Test(unittest.TestCase):
     def setUp(self):
-        strike = 400
+        strike = 303
 
         asset_num = 3
         init_price_vec = 100*np.ones(asset_num)
@@ -15,7 +15,7 @@ class Test(unittest.TestCase):
         ir = 0.03
         dividend_vec = np.zeros(asset_num)
         corr_mat = np.eye(asset_num)
-        random_walk = GBM(1, 100, init_price_vec, ir, vol_vec, dividend_vec, corr_mat)
+        random_walk = GBM(3, 3, init_price_vec, ir, vol_vec, dividend_vec, corr_mat)
 
         def test_payoff(*l):
             return max(strike - np.sum(l), 0)
@@ -23,12 +23,10 @@ class Test(unittest.TestCase):
         self.opt1 = American(test_payoff, random_walk)
         
     def test_price1d(self):
-        simulation_result = self.opt1.random_walk.simulate(2)
-        print(np.array(simulation_result)[:,:,1])
-        #approx_put = self.opt1.price(50)
+        np.random.seed(444)
+        self.opt1.price(3)
 
     def test_get_discounted_cash_flow(self):
-        np.random.seed(1)
         random_walk = GBM(3, 3, np.ones(1), 0.03, np.ones(1), np.zeros(1), np.eye(1))
         def test_payoff(*l):
             return max(3 - np.sum(l), 0)

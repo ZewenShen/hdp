@@ -35,11 +35,14 @@ class Regression:
 
     def __init__(self, X_mat, Y, chi=2, payoff_func=lambda x: np.sum(x)):
         assert len(X_mat.shape) == 2, "X in the regression should be a 2d matrix"
-
         self.dimension = len(X_mat[0])
         self.basis = Monomial_Basis(chi, self.dimension)
         
-        self.index = [i for i in range(len(X_mat)) if payoff_func(X_mat[i]) > 0]
+        self.index = np.array([i for i in range(len(X_mat)) if payoff_func(X_mat[i]) > 0])
+
+        self.has_intrinsic_value = False if len(self.index) == 0 else True
+        if not self.has_intrinsic_value: return
+
         target_X, target_Y = X_mat[self.index], Y[self.index]
 
         target_matrix_A = np.array([self.basis.evaluate(x) for x in target_X])
@@ -49,6 +52,7 @@ class Regression:
         """
         X: a numpy array of input data (e.g., asset prices)
         """
+        if not self.has_intrinsic_value: raise RuntimeError("Least square failed due to ineiligible input")
         assert len(X) == self.dimension, "input vector X doesn't meet the regression dimension"
         monomial_terms = self.basis.evaluate(X)
         return np.sum(np.multiply(self.coefficients, monomial_terms))
