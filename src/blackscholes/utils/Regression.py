@@ -33,7 +33,7 @@ class Monomial_Basis:
 
 class Regression:
 
-    def __init__(self, X_mat, Y, chi=2, payoff_func=lambda x: np.sum(x)):
+    def __init__(self, X_mat, Y, chi=2, payoff_func=lambda x: np.max(np.sum(x)-100, 0)):
         assert len(X_mat.shape) == 2, "X in the regression should be a 2d matrix"
         self.dimension = len(X_mat[0])
         self.basis = Monomial_Basis(chi, self.dimension)
