@@ -28,11 +28,7 @@ class GBM:
             sim = np.zeros([self.asset_num, self.N+1])
             sim[:, 0] = self.init_price_vec
             for i in range(1, self.N+1):
-                dW = np.zeros(self.asset_num)
-                for k in range(self.asset_num):
-                    for j in range(k+1):
-                        dW[k] += L[k, j]*np.random.normal()
-                    dW[k] *= sqrt(self.dt)
+                dW = L.dot(np.random.normal(size=self.asset_num))*sqrt(self.dt)
                 sim[:, i] = np.multiply(1 + self.dt*drift_vec, sim[:, i-1]) + np.multiply(np.multiply(self.vol_vec, sim[:, i-1]), dW)
             simulations.append(sim)
         return np.array(simulations)
