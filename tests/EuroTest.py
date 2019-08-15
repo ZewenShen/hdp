@@ -17,11 +17,8 @@ class Test(unittest.TestCase):
         dividend_vec = np.zeros(asset_num)
         corr_mat = np.eye(asset_num)
         random_walk = GBM(1, 400, init_price_vec, ir, vol_vec, dividend_vec, corr_mat)
-
         def test_payoff(*l):
             return max(strike - np.sum(l), 0)
-        #def test_payoff(l):
-        #    return max(strike - l, 0)
         self.opt1 = Euro(test_payoff, random_walk)
         
         spot_price = init_price_vec[0]
@@ -36,7 +33,6 @@ class Test(unittest.TestCase):
         approx_put = self.opt1.price(5000)
         assert abs(approx_put - 2.6101834050208175) < 0.00000000000001
         assert abs(approx_put-real_put)/real_put < 0.006187
-
 
 if __name__ == '__main__':
     unittest.main()

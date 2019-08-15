@@ -41,6 +41,7 @@ class American:
             for j in range(self.random_walk.N, t, -1):
                 if cashflow[j] != 0:
                     discounted_cashflow[i] = cashflow[j] * np.exp((t-j)*self.random_walk.dt*self.random_walk.ir)
+                    break
         return discounted_cashflow
 
     def _get_discounted_cashflow_at_t0(self, cashflow_matrix):

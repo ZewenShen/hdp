@@ -16,13 +16,11 @@ class Test(unittest.TestCase):
         dividend_vec = np.zeros(asset_num)
         corr_mat = np.eye(asset_num)
         random_walk = GBM(1, 300, init_price_vec, ir, vol_vec, dividend_vec, corr_mat)
-
         def test_payoff(*l):
             return max(strike - np.sum(l), 0)
-
         self.opt1 = American(test_payoff, random_walk)
         
-    def dtest_price1d(self):
+    def test_price1d(self):
         np.random.seed(444)
         assert abs(self.opt1.price(3000) - 0.07166975828681604) < 0.00000000000001
 
@@ -30,20 +28,21 @@ class Test(unittest.TestCase):
         np.random.seed(555)
         strike = 100
         asset_num = 2
-        init_price_vec = 110*np.ones(asset_num)
+        init_price_vec = 100*np.ones(asset_num)
         vol_vec = 0.2*np.ones(asset_num)
         ir = 0.05
         dividend_vec = 0.1*np.ones(asset_num)
         corr_mat = np.eye(asset_num)
         corr_mat[0, 1] = 0.3
         corr_mat[1, 0] = 0.3
-        random_walk = GBM(1, 800, init_price_vec, ir, vol_vec, dividend_vec, corr_mat)
-
+        random_walk = GBM(1, 300, init_price_vec, ir, vol_vec, dividend_vec, corr_mat)
         def test_payoff(*l):
             return max(np.max(l) - strike, 0)
-
         opt = American(test_payoff, random_walk)
-        print(opt.price(10000))
+        put = opt.price(3000)
+        real_put = 9.6333
+        assert abs(put - 9.557936820537265) < 0.00000000000001
+        assert abs(put - 9.6333)/9.6333 < 0.00783
         # when init = 110, price is 18.021487449289822/18.15771299285956, real is 17.3487
         # when init = 100, price is 10.072509537503821/9.992812015410516, real is 9.6333
 
