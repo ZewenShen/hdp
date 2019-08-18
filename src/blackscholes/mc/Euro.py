@@ -28,6 +28,11 @@ class Euro:
         b_hat = np.sum(np.multiply(X-meanX, Y-meanY))/np.sum(np.power(X-meanX, 2))
         return np.mean(Y-b_hat*(last_price - np.exp(self.random_walk.ir*self.random_walk.T)*self.random_walk.init_price_vec[0]))
 
+    def price_antithetic_variates(self, path_num=1000):
+        self.simulation_result = self.random_walk.antithetic_simulate(path_num)
+        last_price = [x[:, -1] for x in self.simulation_result]
+        payoff = list(map(self.payoff_func, last_price))
+        return np.mean(payoff) * np.exp(-self.random_walk.ir * self.random_walk.T)
 
 if __name__ == "__main__":
     import sys, os

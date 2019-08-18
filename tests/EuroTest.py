@@ -34,6 +34,13 @@ class Test(unittest.TestCase):
         assert abs(approx_put - 2.6101834050208175) < 0.00000000000001
         assert abs(approx_put-real_put)/real_put < 0.006187
     
+    def test_price_antithetic_variates(self):
+        np.random.seed(1)
+        _, real_put = self.analytical1.european_option_price()
+        approx_put = self.opt1.price_antithetic_variates(5000)
+        assert abs(approx_put - 2.631103908508011) < 0.00000000000001
+        assert abs(approx_put-real_put)/real_put < 0.00178
+
     def test_price1d_control_variates(self):
         strike = 45
         asset_num = 1

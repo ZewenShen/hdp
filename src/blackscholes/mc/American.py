@@ -5,7 +5,7 @@ import numpy as np
 
 class American:
     """
-    Multi-Dimensional American Option
+    Multi-Dimensional American Option. Priced by the Least Square Monte Carlo method.
     """
     def __init__(self, payoff_func, random_walk):
         """
@@ -16,6 +16,7 @@ class American:
         self.random_walk = random_walk
     
     def price(self, path_num=1000):
+        """Least Square Monte Carlo method"""
         self.simulation_result = self.random_walk.simulate(path_num)
         cashflow_matrix = np.zeros([path_num, self.random_walk.N+1])
         cur_price = np.array([x[:, -1] for x in self.simulation_result])

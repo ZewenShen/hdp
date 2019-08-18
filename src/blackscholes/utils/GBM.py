@@ -32,6 +32,24 @@ class GBM:
                 sim[:, i] = np.multiply(1 + self.dt*drift_vec, sim[:, i-1]) + np.multiply(np.multiply(self.vol_vec, sim[:, i-1]), dW)
             simulations.append(sim)
         return np.array(simulations)
+    
+    def antithetic_simulate(self, M):
+        simulations = []
+        drift_vec = self.ir - self.dividend_vec
+        L = np.linalg.cholesky(self.corr_mat)
+        for _ in range(M//2):
+            sim, antithetic_sim = np.zeros([self.asset_num, self.N+1]), np.zeros([self.asset_num, self.N+1])
+            sim[:, 0], antithetic_sim[:, 0] = self.init_price_vec, self.init_price_vec
+            for i in range(1, self.N+1):
+                dW = L.dot(np.random.normal(size=self.asset_num))*sqrt(self.dt)
+                antithetic_dW = -dW
+                sim[:, i] = np.multiply(1 + self.dt*drift_vec, sim[:, i-1]) +\
+                            np.multiply(np.multiply(self.vol_vec, sim[:, i-1]), dW)
+                antithetic_sim[:, i] = np.multiply(1 + self.dt*drift_vec, antithetic_sim[:, i-1]) +\
+                                       np.multiply(np.multiply(self.vol_vec, antithetic_sim[:, i-1]), antithetic_dW)
+            simulations.append(sim)
+            simulations.append(antithetic_sim)
+        return np.array(simulations)
 
 if __name__ == "__main__":
     init_price_vec = np.ones(5)
