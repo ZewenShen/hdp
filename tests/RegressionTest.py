@@ -17,7 +17,7 @@ class Test(unittest.TestCase):
         assert (basis.evaluate([2, 3]) == np.array([1, 3, 2])).all()
 
     def test_regression(self):
-        r = Regression(np.array([[-1, -2], [3, 4], [5, 6], [4, 6], [3, 1]]), np.array([6, 7, 8, 9, 10]), 1)
+        r = Regression(np.array([[-1, -2], [3, 4], [5, 6], [4, 6], [3, 1]]), np.array([6, 7, 8, 9, 10]), 1, payoff_func=lambda x: np.sum(x))
         assert abs(r.evaluate([-1, -2]) - 7.878378378378377) < 0.00000000001
         assert abs(r.evaluate([3, 1]) - 9.594594594594595) < 0.00000000001
         
