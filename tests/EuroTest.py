@@ -27,21 +27,52 @@ class Test(unittest.TestCase):
         sigma = 0.1
         self.analytical1 = Analytical_Sol(spot_price, strike, time_to_maturity, interest_rate, sigma, dividend_yield=0)
         
-    def test_price1d(self):
+    def test_correlated_pricing(self):
+        strike = 50
+        asset_num = 2
+        init_price_vec = np.array([110, 60])
+        vol_vec = np.array([0.4, 0.2])
+        ir = 0.1
+        dividend_vec = 0*np.ones(asset_num)
+        corr_mat = np.eye(asset_num)
+        corr_mat[0, 1] = 0.4
+        corr_mat[1, 0] = 0.4
+        random_walk = GBM(182/365, 400, init_price_vec, ir, vol_vec, dividend_vec, corr_mat)
+        def test_payoff(l):
+            return max(l[0] - l[1] - strike, 0)
+        opt = Euro(test_payoff, random_walk)
+        np.random.seed(1)
+        callV2 = opt.priceV2(1000000)
+        real_call = 12.5583468
+        assert abs(callV2 - 12.566682253085943) < 0.00000000000001
+        assert abs(callV2 - real_call)/real_call < 0.00066374
+        np.random.seed(1)
+        callV3 = opt.priceV3(20000)
+        assert abs(callV3 - 12.586752483453562) < 0.00000000000001
+        assert abs(callV3 - real_call)/real_call < 0.0022619
+
+    def dtest_price1d(self):
         np.random.seed(1)
         _, real_put = self.analytical1.european_option_price()
         approx_put = self.opt1.price(5000)
         assert abs(approx_put - 2.6101834050208175) < 0.00000000000001
         assert abs(approx_put-real_put)/real_put < 0.006187
+
+    def dtest_price1d_V2(self):
+        np.random.seed(1)
+        _, real_put = self.analytical1.european_option_price()
+        approx_put = self.opt1.priceV2(300000)
+        assert abs(approx_put - 2.61594175018011) < 0.00000000000001
+        assert abs(approx_put-real_put)/real_put < 0.003994
     
-    def test_price_antithetic_variates(self):
+    def dtest_price_antithetic_variates(self):
         np.random.seed(1)
         _, real_put = self.analytical1.european_option_price()
         approx_put = self.opt1.price_antithetic_variates(5000)
         assert abs(approx_put - 2.631103908508011) < 0.00000000000001
         assert abs(approx_put-real_put)/real_put < 0.00178
 
-    def test_price1d_control_variates(self):
+    def dtest_price1d_control_variates(self):
         strike = 45
         asset_num = 1
         init_price_vec = 50*np.ones(asset_num)

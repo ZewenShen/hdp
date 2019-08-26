@@ -42,7 +42,7 @@ class Test(unittest.TestCase):
         put = opt.price(3000)
         real_put = 9.6333
         assert abs(put - 9.557936820537265) < 0.00000000000001
-        assert abs(put - 9.6333)/9.6333 < 0.00783
+        assert abs(put - real_put)/real_put < 0.00783
         # when init = 110, price is 18.021487449289822/18.15771299285956, real is 17.3487
         # when init = 100, price is 10.072509537503821/9.992812015410516, real is 9.6333
 
