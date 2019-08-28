@@ -62,3 +62,9 @@ The first term on the right is the variance of an estimate of $E[f(Z)]$ based on
 
 ### PCA covariance matrix
 In the usual problem, the covariance matrix needs to be approximated. But in option pricing, we assume that a correlation matrix is given. In this case, we can recover the correlation matrix to a covariance matrix by only approximating variance of stock price (TODO: Can be analytically expressed?). It should give a more accurate price.
+
+
+# Recent
+
+## Progress
+Implemented the analytical solution to GBM. Implemented importance sampling for European options.
