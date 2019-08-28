@@ -1,4 +1,5 @@
 import numpy as np
+from math import sqrt
 
 class Euro:
     """
@@ -50,6 +51,21 @@ class Euro:
         last_price = [x[:, -1] for x in self.simulation_result]
         payoff = list(map(self.payoff_func, last_price))
         return np.mean(payoff) * np.exp(-self.random_walk.ir * self.random_walk.T)
+
+    def price_importance_sampling(self, path_num):
+        assert hasattr(self.payoff_func, 'strike'), 'Meta info of the payoff function lossing: strike'
+        strike = self.payoff_func.strike
+        self.simulation_result = self.random_walk.importance_sampling_simulate_T(path_num, strike)
+        drift_vec = self.random_walk.ir - self.random_walk.dividend_vec
+        alpha_m_beta = self.random_walk.ir*self.random_walk.T - np.log(strike/self.random_walk.init_price_vec)
+        alpha = (drift_vec - self.random_walk.vol_vec**2/2)*self.random_walk.T
+        beta = np.log(strike/self.random_walk.init_price_vec) - self.random_walk.T*self.random_walk.vol_vec**2/2
+        xi = self.random_walk.vol_vec * sqrt(self.random_walk.T)
+        density_ratio = np.array([np.exp(-(2*np.multiply(alpha_m_beta, Y)-alpha**2+beta**2)/(2*xi**2)) for Y in self.simulation_result])
+        payoff = np.array([self.payoff_func(Y) for Y in self.simulation_result])
+        print(density_ratio)
+        return np.mean(np.multiply(payoff, density_ratio)) * np.exp(-self.random_walk.ir * self.random_walk.T)
+
 
 if __name__ == "__main__":
     import sys, os

@@ -27,7 +27,7 @@ class Test(unittest.TestCase):
         sigma = 0.1
         self.analytical1 = Analytical_Sol(spot_price, strike, time_to_maturity, interest_rate, sigma, dividend_yield=0)
         
-    def test_correlated_pricing(self):
+    def dtest_correlated_pricing(self):
         strike = 50
         asset_num = 2
         init_price_vec = np.array([110, 60])
@@ -95,6 +95,29 @@ class Test(unittest.TestCase):
         assert abs(approx_call - 6.412754547048265) < 0.00000000000001
         assert abs(approx_call-real_call)/real_call < 0.0025422
         assert abs(abs(approx_call2-real_call)/real_call) < 0.04899
+
+    def test_price_importance_sampling(self):
+        strike = 80
+        asset_num = 1
+        init_price_vec = 50*np.ones(asset_num)
+        vol_vec = 0.3*np.ones(asset_num)
+        ir = 0.05
+        dividend_vec = np.zeros(asset_num)
+        corr_mat = np.eye(asset_num)
+        time_to_maturity = 0.25
+        random_walk = GBM(time_to_maturity, 100, init_price_vec, ir, vol_vec, dividend_vec, corr_mat)
+        analytical2 = Analytical_Sol(init_price_vec[0], strike, time_to_maturity, ir, vol_vec[0], dividend_yield=0)
+        def test_payoff(*l):
+            return max(np.sum(l)-strike, 0)
+        test_payoff.strike = strike
+        opt2 = Euro(test_payoff, random_walk)
+
+        real_call, _ = analytical2.european_option_price()
+        np.random.seed(1)
+        approx_call = opt2.price_importance_sampling(3)
+        print(real_call, approx_call)
+        #assert abs(approx_call - 6.412754547048265) < 0.00000000000001
+        #assert abs(approx_call-real_call)/real_call < 0.0025422
 
 if __name__ == '__main__':
     unittest.main()

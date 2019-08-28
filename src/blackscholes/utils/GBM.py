@@ -60,7 +60,6 @@ class GBM:
         L = np.linalg.cholesky(self.corr_mat)
         for _ in range(M):
             dW = L.dot(np.random.normal(size=self.asset_num))*sqrt(self.T)
-            # print(np.random.normal(size=self.asset_num).dot(L), L.dot(np.random.normal(size=self.asset_num)).shape)
             rand_term = np.multiply(self.vol_vec, dW)
             sim = np.multiply(self.init_price_vec, np.exp((drift_vec-self.vol_vec**2/2)*self.T + rand_term))
             simulations.append(sim)
@@ -82,6 +81,19 @@ class GBM:
                                        np.multiply(np.multiply(self.vol_vec, antithetic_sim[:, i-1]), antithetic_dW)
             simulations.append(sim)
             simulations.append(antithetic_sim)
+        return np.array(simulations)
+    
+    def importance_sampling_simulate_T(self, M, strike):
+        """
+        Currently only support Hockey stick payoff functions.
+        """
+        simulations = []
+        L = np.linalg.cholesky(self.corr_mat)
+        for _ in range(M):
+            dW = L.dot(np.random.normal(size=self.asset_num))*sqrt(self.T)
+            rand_term = np.multiply(self.vol_vec, dW)
+            sim = np.multiply(self.init_price_vec, np.exp(np.log(strike/self.init_price_vec)-self.T*self.vol_vec**2/2 + rand_term))
+            simulations.append(sim)
         return np.array(simulations)
 
 if __name__ == "__main__":
