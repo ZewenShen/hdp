@@ -1,6 +1,6 @@
 import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(__file__))+"/../src")
-from blackscholes.dl.keras.VannilaNetwork import SingleTimeStepNetwork
+from blackscholes.bsde.VannilaNetwork import SingleTimeStepNetwork
 import unittest
 import numpy as np
 
