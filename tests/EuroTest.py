@@ -27,7 +27,7 @@ class Test(unittest.TestCase):
         sigma = 0.1
         self.analytical1 = Analytical_Sol(spot_price, strike, time_to_maturity, interest_rate, sigma, dividend_yield=0)
         
-    def dtest_correlated_pricing(self):
+    def test_correlated_pricing(self):
         strike = 50
         asset_num = 2
         init_price_vec = np.array([110, 60])
@@ -51,28 +51,28 @@ class Test(unittest.TestCase):
         assert abs(callV3 - 12.586752483453562) < 0.00000000000001
         assert abs(callV3 - real_call)/real_call < 0.0022619
 
-    def dtest_price1d(self):
+    def test_price1d(self):
         np.random.seed(1)
         _, real_put = self.analytical1.european_option_price()
         approx_put = self.opt1.price(5000)
         assert abs(approx_put - 2.6101834050208175) < 0.00000000000001
         assert abs(approx_put-real_put)/real_put < 0.006187
 
-    def dtest_price1d_V2(self):
+    def test_price1d_V2(self):
         np.random.seed(1)
         _, real_put = self.analytical1.european_option_price()
         approx_put = self.opt1.priceV2(300000)
         assert abs(approx_put - 2.61594175018011) < 0.00000000000001
         assert abs(approx_put-real_put)/real_put < 0.003994
     
-    def dtest_price_antithetic_variates(self):
+    def test_price_antithetic_variates(self):
         np.random.seed(1)
         _, real_put = self.analytical1.european_option_price()
         approx_put = self.opt1.price_antithetic_variates(5000)
         assert abs(approx_put - 2.631103908508011) < 0.00000000000001
         assert abs(approx_put-real_put)/real_put < 0.00178
 
-    def dtest_price1d_control_variates(self):
+    def test_price1d_control_variates(self):
         strike = 45
         asset_num = 1
         init_price_vec = 50*np.ones(asset_num)
@@ -100,24 +100,26 @@ class Test(unittest.TestCase):
         strike = 80
         asset_num = 1
         init_price_vec = 50*np.ones(asset_num)
-        vol_vec = 0.3*np.ones(asset_num)
-        ir = 0.05
+        vol_vec = 0.2*np.ones(asset_num)
+        ir = 0.03
         dividend_vec = np.zeros(asset_num)
         corr_mat = np.eye(asset_num)
-        time_to_maturity = 0.25
+        time_to_maturity = 1
         random_walk = GBM(time_to_maturity, 100, init_price_vec, ir, vol_vec, dividend_vec, corr_mat)
         analytical2 = Analytical_Sol(init_price_vec[0], strike, time_to_maturity, ir, vol_vec[0], dividend_yield=0)
         def test_payoff(*l):
             return max(np.sum(l)-strike, 0)
         test_payoff.strike = strike
-        opt2 = Euro(test_payoff, random_walk)
 
+        opt2 = Euro(test_payoff, random_walk)
         real_call, _ = analytical2.european_option_price()
         np.random.seed(1)
-        approx_call = opt2.price_importance_sampling(3)
-        print(real_call, approx_call)
-        #assert abs(approx_call - 6.412754547048265) < 0.00000000000001
-        #assert abs(approx_call-real_call)/real_call < 0.0025422
+        approx_call = opt2.price_importance_sampling(10000)
+        np.random.seed(1)
+        weak_approx_call = opt2.priceV2(10000)
+        assert abs(approx_call - 0.06082838151186516) < 0.00000000000001
+        assert abs(approx_call-real_call)/real_call < 0.00297664353761824
+        assert abs(weak_approx_call-real_call)/real_call < 0.1362349660567213
 
 if __name__ == '__main__':
     unittest.main()

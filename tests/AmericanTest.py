@@ -8,7 +8,6 @@ import numpy as np
 class Test(unittest.TestCase):
     def setUp(self):
         strike = 1
-
         asset_num = 1
         init_price_vec = 0.99*np.ones(asset_num)
         vol_vec = 0.2*np.ones(asset_num)

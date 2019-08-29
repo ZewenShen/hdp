@@ -1,6 +1,7 @@
 import numpy as np
 from math import sqrt
 import random
+
 class GBM:
     """
     Multi-asset geometric brownian motion simulation
@@ -88,13 +89,16 @@ class GBM:
         Currently only support Hockey stick payoff functions.
         """
         simulations = []
+        Zs = []
         L = np.linalg.cholesky(self.corr_mat)
         for _ in range(M):
             dW = L.dot(np.random.normal(size=self.asset_num))*sqrt(self.T)
             rand_term = np.multiply(self.vol_vec, dW)
-            sim = np.multiply(self.init_price_vec, np.exp(np.log(strike/self.init_price_vec)-self.T*self.vol_vec**2/2 + rand_term))
+            Z = np.log(strike/self.init_price_vec) - self.T*self.vol_vec**2/2 + rand_term
+            sim = np.multiply(self.init_price_vec, np.exp(Z))
+            Zs.append(Z)
             simulations.append(sim)
-        return np.array(simulations)
+        return np.array(simulations), np.array(Zs)
 
 if __name__ == "__main__":
     init_price_vec = np.ones(5)
