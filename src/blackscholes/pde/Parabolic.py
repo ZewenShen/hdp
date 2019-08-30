@@ -53,3 +53,24 @@ class Solver1d:
         domain = np.linspace(self.domain.a, self.domain.b, self.nx+1)
         f = interpolate.interp1d(domain, self.solution[-1], 'cubic')
         return f(points)
+
+class Domain2d(Domain1d):
+
+    def __init__(self, a, b, c, d, T, ic=None, bc=None):
+        super().__init__(a, b, T, ic, bc)
+        self.c, self.d = c, d
+    
+    def get_discretization_size(self, nx, ny, nt):
+        hx, hy, ht = (self.b-self.a)/nx, (self.d-self.c)/ny, self.T/nt
+        return hx, hy, ht
+
+class Solver2d:
+    """
+    u_t = a(x, y, t)u_xx + b(x, y, t)u_xy + c(x, y, t)u_yy + d(x, y, t)u_x + e(x, y, t)u_y + f(x, y, t)u + g(x, y, t)
+    """
+    def __init__(self, a, b, c, d, e, f, g, domain):
+        self.a, self.b, self.c, self.d, self.e, self.f, self.g = a, b, c, d, e, f, g
+        self.domain = domain
+    
+    def solve(self, nx, ny, nt):
+        hx, hy, ht = self.domain.get_discretization_size(nx, ny, nt)
