@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.sparse import lil_matrix, csr_matrix
+from scipy.sparse import lil_matrix, csr_matrix, diags, kron
 from scipy.sparse.linalg import spsolve
 from scipy import interpolate
 
@@ -17,7 +17,7 @@ class Domain1d:
 
 class Solver1d:
     """
-    u_t = p(x, t)u_xx + q(x, t)u_x + r(x, t)u + f
+    u_t = p(x, t)u_xx + q(x, t)u_x + r(x, t)u + f(x, t)
     """
     def __init__(self, p, q, r, f, domain):
         self.p, self.q, self.r, self.f = p, q, r, f
@@ -73,4 +73,18 @@ class Solver2d:
         self.domain = domain
     
     def solve(self, nx, ny, nt):
+        s1, s2 = np.linspace(self.domain.a, self.domain.b, nx+1), np.linspace(self.domain.c, self.domain.d, ny+1)
         hx, hy, ht = self.domain.get_discretization_size(nx, ny, nt)
+        Is1, Is2 = np.eye(nx), np.eye(ny)
+        T2s1 = diags([1, -2, 1], [-1, 0, 1], (nx-1, nx-1))/hx**2
+        T1s1 = diags([-1, 0, 1], [-1, 0, 1], (nx-1, nx-1))/(2*hx)
+        T2s2 = diags([1, -2, 1], [-1, 0, 1], (ny-1, ny-1))/hy**2
+        T1s2 = diags([-1, 0, 1], [-1, 0, 1], (ny-1, ny-1))/(2*hy)
+        for i in range(1, nt+1):
+            t, prev_t = i*ht, (i-1)*ht
+            A20, C20 = kron(T2s1, Is2), kron(diags(self.a(s1, s2, t)), Is2)
+            A02, C02 = kron(Is1, T2s2), kron(Is1, diags(self.b(s1, s2, t)))
+            A11, C11 = kron(T1s1, T1s2), kron
+            A10, C10 = kron(T1s1, Is2), kron(diags(self.d(s1, s2, t)), Is2)
+            A01, C01 = kron(Is1, T1s2), kron(Is1, diags(self.e(s1, s2, t)))
+            A00, C00 = kron(Is1, Is2), self.f(s1, s2, t)*kron(Is1, Is2)
