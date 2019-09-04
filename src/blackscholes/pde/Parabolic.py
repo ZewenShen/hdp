@@ -2,7 +2,7 @@ import numpy as np
 from scipy.sparse import lil_matrix, csr_matrix, diags, kron
 from scipy.sparse.linalg import spsolve
 from scipy import interpolate
-
+from functools import reduce
 
 class Domain1d:
 
@@ -66,9 +66,9 @@ class Domain2d(Domain1d):
 
 class Coef2d:
     """
-    Represent a coefficient of differential operator \sum_{i=0}^n f1(x, t)f2(y, t)
+    Represent a coefficient of differential operator sum_{i=0}^n f1(x, t)f2(y, t)
     """
-    def __init__(self, f1, f2):
+    def __init__(self, f1=lambda x, t: np.zeros(len(x)), f2=lambda y, t: np.zeros(len(y))):
         """
         f1: f1(x, t)
         f2: f2(y, t)
@@ -82,10 +82,14 @@ class Coef2d:
             self.f2 = f2
         else:
             raise RuntimeError("2D solver input coefficient error")
+    
+    def __iter__(self):
+        return zip(self.f1, self.f2)
 
 class Solver2d:
     """
     u_t = coef_a*u_xx + coef_b*u_xy + coef_c*u_yy + coef_d*u_x + coef_e*u_y + coef_f*u + g(x, y, t)
+    where coef is defined above. Coef represents sum_{i=0}^n f1(x, t)f2(y, t).
     """
     def __init__(self, coef_a, coef_b, coef_c, coef_d, coef_e, coef_f, g, domain):
         self.coef_a, self.coef_b, self.coef_c, self.coef_d, self.coef_e, self.coef_f, self.g = coef_a, coef_b, coef_c, coef_d, coef_e, coef_f, g
@@ -93,19 +97,47 @@ class Solver2d:
     
     def solve(self, nx, ny, nt):
         s1, s2 = np.linspace(self.domain.a, self.domain.b, nx+1), np.linspace(self.domain.c, self.domain.d, ny+1)
+        X1, X2 = s1[1:-1], s2[1:-1]
         hx, hy, ht = self.domain.get_discretization_size(nx, ny, nt)
-        Is1, Is2 = np.eye(nx), np.eye(ny)
+        Is1, Is2 = np.eye(nx-1), np.eye(ny-1)
         T2s1 = diags([1, -2, 1], [-1, 0, 1], (nx-1, nx-1))/hx**2
         T1s1 = diags([-1, 0, 1], [-1, 0, 1], (nx-1, nx-1))/(2*hx)
         T2s2 = diags([1, -2, 1], [-1, 0, 1], (ny-1, ny-1))/hy**2
         T1s2 = diags([-1, 0, 1], [-1, 0, 1], (ny-1, ny-1))/(2*hy)
+        summation = lambda x, y: x+y
+
+        solution = self.domain.ic(s1, s2, 0).flatten()
+        solution = solution[np.newaxis, ...]
         for i in range(1, nt+1):
             t, prev_t = i*ht, (i-1)*ht
-            """
-            A20, C20 = kron(T2s1, Is2), kron(diags(self.a(s1, s2, t)), Is2)
-            A02, C02 = kron(Is1, T2s2), kron(Is1, diags(self.b(s1, s2, t)))
-            A11, C11 = kron(T1s1, T1s2), kron
-            A10, C10 = kron(T1s1, Is2), kron(diags(self.d(s1, s2, t)), Is2)
-            A01, C01 = kron(Is1, T1s2), kron(Is1, diags(self.e(s1, s2, t)))
-            A00, C00 = kron(Is1, Is2), self.f(s1, s2, t)*kron(Is1, Is2)
-            """
+            uxx = reduce(summation, [kron(diags(f2(X2, t))@Is2, diags(f1(X1, t))@T2s1) for f1, f2 in self.coef_a])
+            uxy = reduce(summation, [kron(diags(f2(X2, t))@T2s1, diags(f1(X1, t))@T1s1) for f1, f2 in self.coef_b])
+            uyy = reduce(summation, [kron(diags(f2(X2, t))@T2s2, diags(f1(X1, t))@Is1) for f1, f2 in self.coef_c])
+            ux = reduce(summation, [kron(diags(f2(X2, t))@Is2, diags(f1(X1, t))@T1s1) for f1, f2 in self.coef_d])
+            uy = reduce(summation, [kron(diags(f2(X2, t))@T1s2, diags(f1(X1, t))@Is1) for f1, f2 in self.coef_e])
+            u = reduce(summation, [kron(diags(f2(X2, t))@Is2, diags(f1(X1, t))@Is1) for f1, f2 in self.coef_f])
+            A = uxx + uxy + uyy + ux + uy + u
+            b = self.g(X1, X2, t).flatten()
+
+            bottom_row_bv = self.domain.bc(X1, self.domain.c, t).flatten()
+            bottom_b_uyy = reduce(summation, [np.multiply(f1(X1, t), bottom_row_bv)*f2([self.domain.c], t)/hy**2 for f1, f2 in self.coef_c])
+            bottom_b_uy = reduce(summation, [np.multiply(f1(X1, t), bottom_row_bv)*f2([self.domain.c], t)/(-2*hy) for f1, f2 in self.coef_e])
+            
+            top_row_bv = self.domain.bc(X1, self.domain.d, t).flatten()
+            top_b_uyy = reduce(summation, [np.multiply(f1(X1, t), top_row_bv)*f2([self.domain.d], t)/hy**2 for f1, f2 in self.coef_c])
+            top_b_uy = reduce(summation, [np.multiply(f1(X1, t), top_row_bv)*f2([self.domain.d], t)/(2*hy) for f1, f2 in self.coef_e])
+            
+            left_column_bv = self.domain.bc(self.domain.a, X2, t).flatten()
+            left_b_uxx = reduce(summation, [np.multiply(f2(X2, t), left_column_bv)*f1([self.domain.a], t)/hx**2 for f1, f2 in self.coef_a])
+            left_b_ux = reduce(summation, [np.multiply(f2(X2, t), left_column_bv)*f1([self.domain.a], t)/(-2*hx) for f1, f2 in self.coef_d])
+            
+            right_column_bv = self.domain.bc(self.domain.b, X2, t).flatten()
+            right_b_uxx = reduce(summation, [np.multiply(f2(X2, t), right_column_bv)*f1([self.domain.b], t)/hx**2 for f1, f2 in self.coef_a])
+            right_b_ux = reduce(summation, [np.multiply(f2(X2, t), right_column_bv)*f1([self.domain.b], t)/(2*hx) for f1, f2 in self.coef_d])
+            b[:nx-1] += bottom_b_uyy + bottom_b_uy
+            b[-(nx-1):] += top_b_uyy + top_b_uy
+            b[::nx-1] += left_b_uxx + left_b_ux
+            b[nx-2::nx-1] += right_b_uxx + right_b_ux
+
+
+            print(A.toarray())
