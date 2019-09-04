@@ -64,12 +64,31 @@ class Domain2d(Domain1d):
         hx, hy, ht = (self.b-self.a)/nx, (self.d-self.c)/ny, self.T/nt
         return hx, hy, ht
 
+class Coef2d:
+    """
+    Represent a coefficient of differential operator \sum_{i=0}^n f1(x, t)f2(y, t)
+    """
+    def __init__(self, f1, f2):
+        """
+        f1: f1(x, t)
+        f2: f2(y, t)
+        They are either functions or functions in a list (python list or numpy list)
+        """
+        if callable(f1) and callable(f2):
+            self.f1 = [f1]
+            self.f2 = [f2]
+        elif len(f1) == len(f2):
+            self.f1 = f1
+            self.f2 = f2
+        else:
+            raise RuntimeError("2D solver input coefficient error")
+
 class Solver2d:
     """
-    u_t = a(x, y, t)u_xx + b(x, y, t)u_xy + c(x, y, t)u_yy + d(x, y, t)u_x + e(x, y, t)u_y + f(x, y, t)u + g(x, y, t)
+    u_t = coef_a*u_xx + coef_b*u_xy + coef_c*u_yy + coef_d*u_x + coef_e*u_y + coef_f*u + g(x, y, t)
     """
-    def __init__(self, a, b, c, d, e, f, g, domain):
-        self.a, self.b, self.c, self.d, self.e, self.f, self.g = a, b, c, d, e, f, g
+    def __init__(self, coef_a, coef_b, coef_c, coef_d, coef_e, coef_f, g, domain):
+        self.coef_a, self.coef_b, self.coef_c, self.coef_d, self.coef_e, self.coef_f, self.g = coef_a, coef_b, coef_c, coef_d, coef_e, coef_f, g
         self.domain = domain
     
     def solve(self, nx, ny, nt):
@@ -82,9 +101,11 @@ class Solver2d:
         T1s2 = diags([-1, 0, 1], [-1, 0, 1], (ny-1, ny-1))/(2*hy)
         for i in range(1, nt+1):
             t, prev_t = i*ht, (i-1)*ht
+            """
             A20, C20 = kron(T2s1, Is2), kron(diags(self.a(s1, s2, t)), Is2)
             A02, C02 = kron(Is1, T2s2), kron(Is1, diags(self.b(s1, s2, t)))
             A11, C11 = kron(T1s1, T1s2), kron
             A10, C10 = kron(T1s1, Is2), kron(diags(self.d(s1, s2, t)), Is2)
             A01, C01 = kron(Is1, T1s2), kron(Is1, diags(self.e(s1, s2, t)))
             A00, C00 = kron(Is1, Is2), self.f(s1, s2, t)*kron(Is1, Is2)
+            """
