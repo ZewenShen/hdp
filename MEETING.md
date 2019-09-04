@@ -14,9 +14,6 @@ Corr = $\Rho = LL^T$. $dW = LN\sqrt{dt}$ where $N$ is a normal distribution RV v
 ###  Feyman-Kac can transform second order linear pde into bsde
 
   
-
-###  My other questions during meeting seem to be too trivial now (8.23). Thus skipped.
-
 #  8.7
 
 ##  Progress
@@ -26,10 +23,6 @@ Read Chen's thesis in detail. Read [Longstaff Schwartz paper](https://people.mat
 ###  Complete delta heding
 
 During the delta hedging process, we need Delta at each time step for the current stock price. We can retrieve that either by running the MC again, or interpolate using results gained from previous MC.
-
-  
-
-###  My other questions during meeting seem to be too trivial now (8.23). Thus skipped.
 
 #  8.14
 
