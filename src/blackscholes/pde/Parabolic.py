@@ -106,7 +106,7 @@ class Solver2d:
         T1s2 = diags([-1, 0, 1], [-1, 0, 1], (ny-1, ny-1))/(2*hy)
         summation = lambda x, y: x+y
 
-        solution = self.domain.ic(S1, S2, 0).flatten()
+        solution = self.domain.ic(X1, X2, 0).flatten()
         solution = solution[np.newaxis, ...]
         b = self._get_b(0, hx, hy, nx, ny, X1, X2)
         for i in range(1, nt+1):
@@ -124,6 +124,8 @@ class Solver2d:
             lhs = I-ht*A/2
             rhs = (I+ht*A/2).dot(solution[-1]) + ht*(b+prev_b)/2
             sol = spsolve(lhs, rhs)
+            solution = np.vstack([solution, sol])
+        return solution
 
     def _get_b(self, t, hx, hy, nx, ny, S1, S2):
         """
