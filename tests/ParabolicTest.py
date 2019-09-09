@@ -9,7 +9,7 @@ from math import pi
 
 class Test(unittest.TestCase):
 
-    def dtest_EuroSolver1d(self):
+    def test_EuroSolver1d(self):
         T = 1
         domain = Domain1d(0, 6, T)
         vol, ir, dividend, strike = 0.1, 0.03, 0.01, 1
@@ -22,13 +22,13 @@ class Test(unittest.TestCase):
         assert abs(approx_put-0.030050214069580493) < 0.00000000000001
         assert abs(approx_put-real_put)/real_put < 0.00054
 
-    def test_Solver2d(self):
+    def dtest_Solver2d(self):
         ic = lambda x, y, t: np.zeros([len(x), len(y)])
         bc = lambda x, y, t: np.ones(len(x)) if type(y) is int else np.ones(len(y))
 
         domain = Domain2d(0, 10, 0, 10, 1, ic, bc)
-        coef_c = Coef2d(lambda s1, t: np.ones(len(s1)), lambda s2, t: np.ones(len(s2)))
-        coef_a, coef_b, coef_f, coef_d, coef_e = Coef2d(), Coef2d(), Coef2d(), Coef2d(), Coef2d()
+        coef_b = Coef2d(lambda s1, t: np.ones(len(s1)), lambda s2, t: np.ones(len(s2)))
+        coef_a, coef_c, coef_f, coef_d, coef_e = Coef2d(), Coef2d(), Coef2d(), Coef2d(), Coef2d()
         g = lambda s1, s2, t: np.zeros(len(s1)*len(s2))
         solver = Solver2d(coef_a, coef_b, coef_c, coef_d, coef_e, coef_f, g, domain)
         solver.solve(4, 4, 1)
