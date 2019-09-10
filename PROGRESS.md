@@ -148,3 +148,9 @@ $\frac{\partial V}{\partial S} = \frac{\partial V}{\partial x}\frac{\partial x}{
 
 $\frac{\partial^2 V}{\partial S^2} = \frac{\partial }{\partial S}(\frac{\partial V}{\partial S}) = \frac{\partial }{\partial S}(\frac{1}{S}\frac{\partial V}
 {\partial x})=-\frac{1}{S^2}\frac{\partial V}{\partial x}+\frac{1}{S}\frac{\partial}{\partial S}(\frac{\partial V}{\partial x})=-\frac{1}{S^2}\frac{\partial V}{\partial x}+\frac{1}{S}\frac{\partial x}{\partial S}\frac{\partial}{\partial x}(\frac{\partial V}{\partial x})=-\frac{1}{S^2}\frac{\partial V}{\partial x}+\frac{1}{S^2}\frac{\partial^2 V}{\partial x^2}$
+
+# 9.9
+
+## Progress
+
+Further implementation on 2D parabolic pde solver (haven't debugged). Read chapter 3 (probability & information theory), chapter 5 (machine learning basics), half of chapter 6 (deep feedforward networks). Studied concepts in information theory in depth. Read again chapter 1 - 4.1 of the foundation work in this field: [the deep Galerkin method (DGM)](https://arxiv.org/abs/1708.07469), http://utstat.toronto.edu/~ali/papers/PDEandDeepLearning.pdf as a supplementary material.
