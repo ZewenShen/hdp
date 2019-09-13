@@ -1,6 +1,6 @@
 import enum
 import numpy as np
-from .Parabolic import Solver1d
+from Parabolic import Solver1d
 
 class CallPutType(enum.IntEnum):
     CALL = 1
