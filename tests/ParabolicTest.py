@@ -1,7 +1,7 @@
 import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(__file__))+"/../src")
 from blackscholes.pde.Parabolic import Solver1d, Coef2d, Solver2d
-from blackscholes.pde.Euro import EuroSolver1d, CallPutType
+from blackscholes.pde.Euro import Euro1d, CallPutType
 from blackscholes.utils.Analytical import Analytical_Sol
 from blackscholes.utils.Domain import Domain1d, Domain2d
 import unittest
@@ -9,11 +9,11 @@ import numpy as np
 
 class Test(unittest.TestCase):
 
-    def test_EuroSolver1d(self):
+    def test_Euro1d(self):
         T = 1
         domain = Domain1d(0, 6, T)
         vol, ir, dividend, strike = 0.1, 0.03, 0.01, 1
-        solver = EuroSolver1d(domain, vol, ir, dividend, T, CallPutType.PUT)
+        solver = Euro1d(domain, vol, ir, dividend, T, CallPutType.PUT)
         spot = 1
         solver.solve(400, 200)
         approx_put = solver.evaluate(spot)

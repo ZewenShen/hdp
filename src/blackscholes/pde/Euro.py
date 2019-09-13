@@ -6,7 +6,7 @@ class CallPutType(enum.IntEnum):
     CALL = 1
     PUT = -1
 
-class EuroSolver1d(Solver1d):
+class Euro1d(Solver1d):
     def __init__(self, domain, vol, ir, dividend, strike, cp_type):
         """
         cp_type (call/put type): 1 if call, -1 if put
