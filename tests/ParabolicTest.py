@@ -1,11 +1,11 @@
 import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(__file__))+"/../src")
-from blackscholes.pde.Parabolic import Domain1d, Solver1d, Domain2d, Coef2d, Solver2d
+from blackscholes.pde.Parabolic import Solver1d, Coef2d, Solver2d
 from blackscholes.pde.Euro import EuroSolver1d, CallPutType
 from blackscholes.utils.Analytical import Analytical_Sol
+from blackscholes.utils.Domain import Domain1d, Domain2d
 import unittest
 import numpy as np
-from math import pi
 
 class Test(unittest.TestCase):
 
