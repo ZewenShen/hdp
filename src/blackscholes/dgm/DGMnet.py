@@ -27,17 +27,17 @@ class DGMNet(tf.keras.Model):
             self.LSTMLayerList.append(LSTMLayer(input_dim+1, layer_width, activation="tanh"))
         
         # define final layer as fully connected with a single output (function value)
-        self.final_layer = DenseLayer(1, layer_width, activation=None)
+        self.final_layer = DenseLayer(layer_width, 1, activation=None)
     
-    def call(self, t, x):
-        '''            
+    def call(self, x, t):
+        '''
         Args:
             t: sampled time inputs 
             x: sampled space inputs
         Run the DGM model and obtain fitted function value at the inputs (t,x)                
         '''  
         # define input vector as time-space pairs
-        X = tf.concat([t, x], 1)
+        X = tf.concat([x, t], 1)
         S = self.initial_layer.call(X)
         for i in range(self.n_layers):
             S = self.LSTMLayerList[i].call(S, X)
@@ -52,7 +52,7 @@ class LSTMLayer(tf.keras.layers.Layer):
             - n_outputs:    number of outputs
             - activation:   activation function
         """
-        super().__init__()
+        super(LSTMLayer, self).__init__()
 
         self.n_outputs = n_outputs
         self.n_inputs = n_inputs
@@ -96,7 +96,7 @@ class DenseLayer(tf.keras.layers.Layer):
             - n_outputs:    number of outputs
             - activation:   activation function
         """
-        super().__init__()
+        super(DenseLayer, self).__init__()
 
         self.n_inputs = n_inputs
         self.n_outputs = n_outputs

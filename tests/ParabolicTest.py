@@ -14,7 +14,7 @@ class Test(unittest.TestCase):
         T = 1
         domain = Domain1d(0, 6, T)
         vol, ir, dividend, strike = 0.1, 0.03, 0.01, 1
-        solver = Euro1d(domain, vol, ir, dividend, T, CallPutType.PUT)
+        solver = Euro1d(domain, vol, ir, dividend, strike, CallPutType.PUT)
         spot = 1
         solver.solve(400, 200)
         approx_put = solver.evaluate(spot)

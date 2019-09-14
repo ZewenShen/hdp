@@ -34,7 +34,7 @@ class Sampler1d:
         t_terminal = T * np.ones((n_terminal, 1))
         S_terminal = np.random.uniform(low=a/S_multiplier, high=b*S_multiplier, size = [n_terminal, 1])
         
-        return t_interior, S_interior, t_boundary, S_boundary, t_terminal, S_terminal
+        return S_interior, t_interior, S_boundary, t_boundary, S_terminal, t_terminal
 
 class Domain2d(Domain1d):
 
