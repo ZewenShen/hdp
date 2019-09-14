@@ -1,13 +1,7 @@
 import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(__file__))+"/../..")
 from blackscholes.pde.Parabolic import Solver1d
-import enum
 import numpy as np
-
-
-class CallPutType(enum.IntEnum):
-    CALL = 1
-    PUT = -1
 
 class Euro1d(Solver1d):
     def __init__(self, domain, vol, ir, dividend, strike, cp_type):
@@ -21,4 +15,3 @@ class Euro1d(Solver1d):
         domain.ic = lambda S, t: np.maximum(cp_type*(S - strike), 0)
         domain.bc = lambda S, t: strike*np.exp(-ir*t) if abs(S) < 7/3-4/3-1 else 0
         super().__init__(p, q, r, f, domain)
-
