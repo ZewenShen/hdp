@@ -4,7 +4,7 @@ import tensorflow as tf
 
 class DGMNet(tf.keras.Model):
     
-    def __init__(self, layer_width, n_layers, input_dim):
+    def __init__(self, n_layers, layer_width, input_dim):
         '''
         Args:
             layer_width: layer's width
