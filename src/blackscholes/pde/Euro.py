@@ -1,6 +1,9 @@
+import sys, os
+sys.path.append(os.path.dirname(os.path.abspath(__file__))+"/../..")
+from blackscholes.pde.Parabolic import Solver1d
 import enum
 import numpy as np
-from Parabolic import Solver1d
+
 
 class CallPutType(enum.IntEnum):
     CALL = 1

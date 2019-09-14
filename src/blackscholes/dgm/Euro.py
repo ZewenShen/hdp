@@ -1,4 +1,6 @@
-from DGMNet import DGMNet
+import sys, os
+sys.path.append(os.path.dirname(os.path.abspath(__file__))+"/../..")
+from blackscholes.dgm.DGMNet import DGMNet
 import tensorflow as tf
 
 class Euro1d:
@@ -32,6 +34,9 @@ class Euro1d:
         values = [1e-4, 5e-5, 1e-5, 5e-6, 1e-6, 5e-7, 1e-7]
         learning_rate = tf.train.piecewise_constant(global_step, boundaries, values)
         optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss_tnsr)
+
+        with tf.Session() as sess:
+            sess.run(tf.global_variables_initializer())
 
 
 
