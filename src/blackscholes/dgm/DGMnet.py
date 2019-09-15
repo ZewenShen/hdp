@@ -37,7 +37,7 @@ class DGMNet(tf.keras.Model):
         Run the DGM model and obtain fitted function value at the inputs (t,x)                
         '''  
         # define input vector as time-space pairs
-        X = tf.concat([x, t], 1)
+        X = tf.concat([t, x], 1)
         S = self.initial_layer.call(X)
         for i in range(self.n_layers):
             S = self.LSTMLayerList[i].call(S, X)
