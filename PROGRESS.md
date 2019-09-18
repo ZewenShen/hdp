@@ -160,3 +160,9 @@ Further implementation on 2D parabolic pde solver (haven't debugged). Read chapt
 ## Progress
 
 Learned the use of tensorflow. Implemented the deep galerkin method for single-asset BS equation. Came up with several ideas about how to improve DGM. Method of characteristic. Read "Numerical methods for conservation laws", learned some mathematical foundation of the conservation laws and the numerical difficulties. Learned some numerical methods for Burgers' equation. 
+
+### DGM possible improvements
+Add penalty terms (1. make delta monotonic. 2. avoid negative or > stock price option) to th loss term. Do more samplings in BC and IC at the beginning.
+
+### Advantage of DGM
+Able to get Greek on the whole domain. Able to know the loss when computing solutions.
