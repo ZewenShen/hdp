@@ -3,7 +3,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__))+"/../src")
 from blackscholes.pde.Parabolic import Solver1d, Coef2d, Solver2d
 from blackscholes.pde.Euro import Euro1d
 from blackscholes.utils.Analytical import Analytical_Sol
-from blackscholes.utils.Domain import Domain1d, Domain2d
+from utils.Domain import Domain1d, Domain2d
 from blackscholes.utils.Type import CallPutType
 import unittest
 import numpy as np
