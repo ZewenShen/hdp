@@ -14,7 +14,8 @@ class Solver1d:
 
     def solve(self, nx, nt):
         self.nx = nx
-        hx, ht = self.domain.get_discretization_size(nx, nt)
+        hx, ht = self.domain.get_discretization_size(nx, nt); self.ht = ht
+        self.time_vec = np.linspace(0, self.domain.T, nt+1)
         domain = np.linspace(self.domain.a, self.domain.b, nx+1)
         X = domain[1:-1]
         solution = self.domain.ic(domain, 0)
@@ -38,10 +39,11 @@ class Solver1d:
         self.solution = solution
         return solution
     
-    def evaluate(self, points):
+    def evaluate(self, X, t):
+        t_index = round(t/self.ht)
         domain = np.linspace(self.domain.a, self.domain.b, self.nx+1)
-        f = interpolate.interp1d(domain, self.solution[-1], 'cubic')
-        return f(points)
+        f = interpolate.interp1d(domain, self.solution[t_index], 'cubic')
+        return f(X)
 
 class Coef2d:
     """

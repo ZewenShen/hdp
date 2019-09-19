@@ -2,7 +2,8 @@ import os
 directory = os.path.dirname(os.path.abspath(__file__))
 
 print("-------------------- TestAll Started --------------------")
-
+print("-------------------- Running NonlinearTest --------------------")
+os.system('python {}/NonlinearTest.py'.format(directory))
 print("-------------------- Running MCEuroTest --------------------")
 os.system('python {}/MCEuroTest.py'.format(directory))
 print("-------------------- Running MCAmericanTest --------------------")

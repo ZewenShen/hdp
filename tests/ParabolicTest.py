@@ -17,7 +17,7 @@ class Test(unittest.TestCase):
         solver = Euro1d(domain, vol, ir, dividend, strike, CallPutType.PUT)
         spot = 1
         solver.solve(400, 200)
-        approx_put = solver.evaluate(spot)
+        approx_put = solver.evaluate(spot, T)
         analytical = Analytical_Sol(spot, strike, T, ir, vol, dividend_yield=dividend)
         _, real_put = analytical.european_option_price()
         assert abs(approx_put-0.030050214069580493) < 0.00000000000001
