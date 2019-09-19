@@ -2,7 +2,7 @@ import sys, os, time
 DIR_LOC = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(DIR_LOC+"/..")
 from blackscholes.dgm.DGMNet import DGMNet
-from blackscholes.utils.Domain import Sampler1d
+from utils.Domain import Sampler1d
 import tensorflow as tf
 import numpy as np
 
@@ -62,6 +62,17 @@ class Euro1d:
             # t_plot = 0*np.ones_like(S_plot)
             # fitted_optionValue = sess.run([V], feed_dict= {S_interior_tnsr: S_plot, t_interior_tnsr: t_plot})
             # print(fitted_optionValue)
+
+    def restore(self, S, t, saved_name, n_layers=3, layer_width=50):
+        self.model = DGMNet(n_layers, layer_width, input_dim=1)
+        S_interior_tnsr = tf.placeholder(tf.float32, [None,1])
+        t_interior_tnsr = tf.placeholder(tf.float32, [None,1])
+        V = self.model(S_interior_tnsr, t_interior_tnsr)
+        model_saver = tf.train.Saver()
+        with tf.Session() as sess:
+            model_saver.restore(sess, DIR_LOC+'/saved_models/{}.ckpt'.format(saved_name))
+            fitted_optionValue = sess.run([V], feed_dict= {S_interior_tnsr: S, t_interior_tnsr: t})
+            print(fitted_optionValue)
 
     def loss_func(self, model, S_interior, t_interior, S_boundary, t_boundary, S_terminal, t_terminal):
         ''' Compute total loss for training.

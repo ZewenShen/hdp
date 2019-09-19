@@ -1,7 +1,7 @@
 import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(__file__))+"/../src")
 from blackscholes.dgm.Euro import Euro1d
-from blackscholes.utils.Domain import Domain1d
+from utils.Domain import Domain1d
 from blackscholes.utils.Type import CallPutType
 import unittest
 import numpy as np
@@ -11,6 +11,7 @@ class Test(unittest.TestCase):
 
     def test_euro1d(self):
         tf.random.set_random_seed(4)
+        np.random.seed(4)
         T = 1
         domain = Domain1d(0, 2, T)
         vol, ir, dividend, strike = 0.1, 0.03, 0.01, 1
@@ -30,6 +31,16 @@ class Test(unittest.TestCase):
         #     fitted_optionValue = sess.run([V], feed_dict= {S_interior_tnsr: S_plot, t_interior_tnsr: t_plot})
         #     print(fitted_optionValue)
         #     writer.close()
+    def test_euro1d_restore(self):
+        tf.random.set_random_seed(4)
+        np.random.seed(4)
+        T = 1
+        domain = Domain1d(0, 2, T)
+        vol, ir, dividend, strike = 0.1, 0.03, 0.01, 1
+        solver = Euro1d(domain, vol, ir, dividend, strike, CallPutType.PUT)
+        S = np.linspace(domain.a, domain.b, 20).reshape(-1, 1)
+        t = 0*np.ones_like(S)
+        solver.restore(S, t, "Euro1d_20190915")
         
 if __name__ == '__main__':
     unittest.main()
