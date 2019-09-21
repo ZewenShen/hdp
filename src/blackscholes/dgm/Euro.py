@@ -75,7 +75,7 @@ class Euro1d:
         with tf.Session() as sess:
             model_saver.restore(sess, DIR_LOC+'/saved_models/{}.ckpt'.format(saved_name))
             fitted_optionValue = sess.run(V, feed_dict= {S_interior_tnsr: S, t_interior_tnsr: t})
-            print("Model {}: {}".format(saved_name, fitted_optionValue))
+            print("Model {}: {}".format(saved_name, fitted_optionValue.T))
             return fitted_optionValue.T
             
     def loss_func(self, model, S_interior, t_interior, S_boundary, t_boundary, S_terminal, t_terminal):
@@ -107,7 +107,7 @@ class Euro1d:
                                       tf.zeros_like(fitted_bc_val))
         else:
             target_bc_val = tf.where(S_boundary <= self.domain.a,\
-                                      tf.math.multiply(S_boundary, tf.math.exp(-self.ir*t_boundary)),\
+                                      tf.math.multiply(self.strike, tf.math.exp(-self.ir*t_boundary)),\
                                       tf.zeros_like(fitted_bc_val))
         # target_bc_val = tf.zeros_like(fitted_bc_val)
         # print(fitted_bc_val); print(S_boundary); print(valuable_index); print(target_bc_val[valuable_index[0]]); print(S_boundary[valuable_index[0]])
