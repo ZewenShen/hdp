@@ -97,7 +97,7 @@ class Euro1d:
         diff_V = V_t + self.p(S_interior, t_interior)*V_ss + self.q(S_interior, t_interior)*V_s - self.ir*V
 
         # compute average L2-norm of differential operator
-        L1 = tf.reduce_mean(tf.square(diff_V)) 
+        L1 = tf.reduce_mean(tf.square(diff_V))
         
         # Loss term #2: boundary condition
         fitted_bc_val = model(S_boundary, t_boundary)
@@ -107,7 +107,7 @@ class Euro1d:
                                       tf.zeros_like(fitted_bc_val))
         else:
             target_bc_val = tf.where(S_boundary <= self.domain.a,\
-                                      tf.math.multiply(self.strike, tf.math.exp(-self.ir*t_boundary)),\
+                                      tf.math.multiply(tf.cast(self.strike, tf.float32), tf.math.exp(-self.ir*t_boundary)),\
                                       tf.zeros_like(fitted_bc_val))
         # target_bc_val = tf.zeros_like(fitted_bc_val)
         # print(fitted_bc_val); print(S_boundary); print(valuable_index); print(target_bc_val[valuable_index[0]]); print(S_boundary[valuable_index[0]])
