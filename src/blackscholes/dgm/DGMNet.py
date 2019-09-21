@@ -22,7 +22,7 @@ class DGMNet(tf.keras.Model):
         # define intermediate LSTM layers
         self.n_layers = n_layers
         self.LSTMLayerList = []
-                
+
         for _ in range(self.n_layers):
             self.LSTMLayerList.append(LSTMLayer(input_dim+1, layer_width, activation="tanh"))
         

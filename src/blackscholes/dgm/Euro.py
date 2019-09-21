@@ -21,7 +21,10 @@ class Euro1d:
         self.sampler = Sampler1d(domain)
 
     def run(self, n_samples, steps_per_sample, n_layers=3, layer_width=50, n_interior=1000, n_boundary=100, n_terminal=100, saved_name=None):
-        if not saved_name: saved_name = "Euro1d_{}.ckpt".format(time.strftime("%Y%m%d"))
+        if not saved_name:
+            saved_name = "Euro1d_{}.ckpt".format(time.strftime("%Y%m%d"))
+        else:
+            saved_name += ".ckpt"
 
         model = DGMNet(n_layers, layer_width, input_dim=1)
         self.model = model
@@ -71,9 +74,10 @@ class Euro1d:
         model_saver = tf.train.Saver()
         with tf.Session() as sess:
             model_saver.restore(sess, DIR_LOC+'/saved_models/{}.ckpt'.format(saved_name))
-            fitted_optionValue = sess.run([V], feed_dict= {S_interior_tnsr: S, t_interior_tnsr: t})
-            print(fitted_optionValue)
-
+            fitted_optionValue = sess.run(V, feed_dict= {S_interior_tnsr: S, t_interior_tnsr: t})
+            print("Model {}: {}".format(saved_name, fitted_optionValue))
+            return fitted_optionValue.T
+            
     def loss_func(self, model, S_interior, t_interior, S_boundary, t_boundary, S_terminal, t_terminal):
         ''' Compute total loss for training.
         
