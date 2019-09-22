@@ -3,12 +3,13 @@ DIR_LOC = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(DIR_LOC+"/..")
 from blackscholes.dgm.DGMNet import DGMNet
 from utils.Domain import Sampler1d
+import utils.Pickle as pickle
 import tensorflow as tf
 import numpy as np
 
 class Euro1d:
 
-    def __init__(self, domain, vol, ir, dividend, strike, cp_type):
+    def __init__(self, domain, vol, ir, dividend, strike, cp_type, sampler=None):
         """
         cp_type (call/put type): 1 if call, -1 if put
         """
@@ -18,13 +19,13 @@ class Euro1d:
         self.strike = strike
         self.cp_type = cp_type
         self.domain = domain
-        self.sampler = Sampler1d(domain)
+        self.sampler = sampler if sampler is not None else Sampler1d(domain)
 
     def run(self, n_samples, steps_per_sample, n_layers=3, layer_width=50, n_interior=1000, n_boundary=100, n_terminal=100, saved_name=None):
         if not saved_name:
-            saved_name = "Euro1d_{}.ckpt".format(time.strftime("%Y%m%d"))
+            saved_name = "{}_Euro1d.ckpt".format(time.strftime("%Y%m%d"))
         else:
-            saved_name += ".ckpt"
+            saved_name = time.strftime("%Y%m%d") + "_" + saved_name + ".ckpt"
 
         model = DGMNet(n_layers, layer_width, input_dim=1)
         self.model = model
@@ -37,8 +38,6 @@ class Euro1d:
         L1_tnsr, L2_tnsr, L3_tnsr = self.loss_func(model, S_interior_tnsr, t_interior_tnsr,\
             S_boundary_tnsr, t_boundary_tnsr, S_terminal_tnsr, t_terminal_tnsr)
         loss_tnsr = L1_tnsr + L2_tnsr + L3_tnsr
-
-        V = self.model(S_interior_tnsr, t_interior_tnsr)
 
         global_step = tf.Variable(0, trainable=False)
         boundaries = [5000, 10000, 20000, 30000, 40000, 45000]
@@ -61,10 +60,10 @@ class Euro1d:
                 self.loss_vec.append(loss); self.L1_vec.append(L1); self.L2_vec.append(L2); self.L3_vec.append(L3)
                 print("Iteration {}: Loss: {}; L1: {}; L2: {}; L3: {}".format(i, loss, L1, L2, L3))
             model_saver.save(sess, DIR_LOC+"/saved_models/"+saved_name)
-            # S_plot = np.linspace(self.domain.a, self.domain.b, 20).reshape(-1, 1)
-            # t_plot = 0*np.ones_like(S_plot)
-            # fitted_optionValue = sess.run([V], feed_dict= {S_interior_tnsr: S_plot, t_interior_tnsr: t_plot})
-            # print(fitted_optionValue)
+        pickle.dump(self.loss_vec, DIR_LOC+"/saved_models/"+time.strftime("%Y%m%d")+"_lossvec.pickle")
+        pickle.dump(self.L1_vec, DIR_LOC+"/saved_models/"+time.strftime("%Y%m%d")+"_l1vec.pickle")
+        pickle.dump(self.L2_vec, DIR_LOC+"/saved_models/"+time.strftime("%Y%m%d")+"_l2vec.pickle")
+        pickle.dump(self.L3_vec, DIR_LOC+"/saved_models/"+time.strftime("%Y%m%d")+"_l3vec.pickle")
 
     def restore(self, S, t, saved_name, n_layers=3, layer_width=50):
         self.model = DGMNet(n_layers, layer_width, input_dim=1)
