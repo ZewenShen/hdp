@@ -23,8 +23,10 @@ class Euro1d:
 
     def run(self, n_samples, steps_per_sample, n_layers=3, layer_width=50, n_interior=1000, n_boundary=100, n_terminal=100, saved_name=None):
         if not saved_name:
+            pickle_dir = DIR_LOC+"/saved_models/{}_Euro1d".format(time.strftime("%Y%m%d"))
             saved_name = "{}_Euro1d.ckpt".format(time.strftime("%Y%m%d"))
         else:
+            pickle_dir = DIR_LOC+"/saved_models/{}_{}".format(time.strftime("%Y%m%d"), saved_name)
             saved_name = time.strftime("%Y%m%d") + "_" + saved_name + ".ckpt"
 
         model = DGMNet(n_layers, layer_width, input_dim=1)
@@ -60,10 +62,10 @@ class Euro1d:
                 self.loss_vec.append(loss); self.L1_vec.append(L1); self.L2_vec.append(L2); self.L3_vec.append(L3)
                 print("Iteration {}: Loss: {}; L1: {}; L2: {}; L3: {}".format(i, loss, L1, L2, L3))
             model_saver.save(sess, DIR_LOC+"/saved_models/"+saved_name)
-        pickle.dump(self.loss_vec, DIR_LOC+"/saved_models/"+time.strftime("%Y%m%d")+"_"+saved_name+"_lossvec.pickle")
-        pickle.dump(self.L1_vec, DIR_LOC+"/saved_models/"+time.strftime("%Y%m%d")+"_"+saved_name+"_l1vec.pickle")
-        pickle.dump(self.L2_vec, DIR_LOC+"/saved_models/"+time.strftime("%Y%m%d")+"_"+saved_name+"_l2vec.pickle")
-        pickle.dump(self.L3_vec, DIR_LOC+"/saved_models/"+time.strftime("%Y%m%d")+"_"+saved_name+"_l3vec.pickle")
+        pickle.dump(self.loss_vec, pickle_dir+"_lossvec.pickle")
+        pickle.dump(self.L1_vec, pickle_dir+"_l1vec.pickle")
+        pickle.dump(self.L2_vec, pickle_dir+"_l2vec.pickle")
+        pickle.dump(self.L3_vec, pickle_dir+"_l3vec.pickle")
 
     def restore(self, S, t, saved_name, n_layers=3, layer_width=50):
         self.model = DGMNet(n_layers, layer_width, input_dim=1)
