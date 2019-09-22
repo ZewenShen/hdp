@@ -7,6 +7,7 @@ from blackscholes.utils.Analytical import Analytical_Sol
 import unittest
 import numpy as np
 import tensorflow as tf
+import matplotlib.pyplot as plt
 
 class Test(unittest.TestCase):
 
@@ -32,6 +33,8 @@ class Test(unittest.TestCase):
             real = real_call
         diff = abs(fitted-real)
         print(fitted, real)
+        plt.plot(Sanaly, real, alpha=0.7, label="Real")
+        plt.plot(Sanaly, fitted[0], alpha=0.7, label="Approx")
         print("error: {}; max error:{}; mean error: {}".format(diff, np.max(diff), np.mean(diff)))
 
         

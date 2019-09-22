@@ -60,10 +60,10 @@ class Euro1d:
                 self.loss_vec.append(loss); self.L1_vec.append(L1); self.L2_vec.append(L2); self.L3_vec.append(L3)
                 print("Iteration {}: Loss: {}; L1: {}; L2: {}; L3: {}".format(i, loss, L1, L2, L3))
             model_saver.save(sess, DIR_LOC+"/saved_models/"+saved_name)
-        pickle.dump(self.loss_vec, DIR_LOC+"/saved_models/"+time.strftime("%Y%m%d")+"_lossvec.pickle")
-        pickle.dump(self.L1_vec, DIR_LOC+"/saved_models/"+time.strftime("%Y%m%d")+"_l1vec.pickle")
-        pickle.dump(self.L2_vec, DIR_LOC+"/saved_models/"+time.strftime("%Y%m%d")+"_l2vec.pickle")
-        pickle.dump(self.L3_vec, DIR_LOC+"/saved_models/"+time.strftime("%Y%m%d")+"_l3vec.pickle")
+        pickle.dump(self.loss_vec, DIR_LOC+"/saved_models/"+time.strftime("%Y%m%d")+"_"+saved_name+"_lossvec.pickle")
+        pickle.dump(self.L1_vec, DIR_LOC+"/saved_models/"+time.strftime("%Y%m%d")+"_"+saved_name+"_l1vec.pickle")
+        pickle.dump(self.L2_vec, DIR_LOC+"/saved_models/"+time.strftime("%Y%m%d")+"_"+saved_name+"_l2vec.pickle")
+        pickle.dump(self.L3_vec, DIR_LOC+"/saved_models/"+time.strftime("%Y%m%d")+"_"+saved_name+"_l3vec.pickle")
 
     def restore(self, S, t, saved_name, n_layers=3, layer_width=50):
         self.model = DGMNet(n_layers, layer_width, input_dim=1)
@@ -102,11 +102,11 @@ class Euro1d:
         fitted_bc_val = model(S_boundary, t_boundary)
         if self.cp_type == 1:
             target_bc_val = tf.where(S_boundary >= self.domain.b,\
-                                      tf.math.multiply(S_boundary, tf.math.exp(-self.ir*t_boundary)),\
+                                      tf.math.subtract(S_boundary, tf.math.multiply(tf.cast(self.strike, tf.float32), tf.math.exp(-self.ir*(self.domain.T-t_boundary)))),\
                                       tf.zeros_like(fitted_bc_val))
         else:
             target_bc_val = tf.where(S_boundary <= self.domain.a,\
-                                      tf.math.multiply(tf.cast(self.strike, tf.float32), tf.math.exp(-self.ir*t_boundary)),\
+                                      tf.math.multiply(tf.cast(self.strike, tf.float32), tf.math.exp(-self.ir*(self.domain.T-t_boundary))),\
                                       tf.zeros_like(fitted_bc_val))
         # target_bc_val = tf.zeros_like(fitted_bc_val)
         # print(fitted_bc_val); print(S_boundary); print(valuable_index); print(target_bc_val[valuable_index[0]]); print(S_boundary[valuable_index[0]])
