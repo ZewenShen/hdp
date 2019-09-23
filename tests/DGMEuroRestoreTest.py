@@ -32,10 +32,11 @@ class Test(unittest.TestCase):
         elif cpType == CallPutType.CALL:
             real = real_call
         diff = abs(fitted-real)
-        print(fitted, real)
         plt.plot(Sanaly, real, alpha=0.7, label="Real")
         plt.plot(Sanaly, fitted[0], alpha=0.7, label="Approx")
         print("error: {}; max error:{}; mean error: {}".format(diff, np.max(diff), np.mean(diff)))
+        plt.legend()
+        plt.show()
 
         
 if __name__ == '__main__':

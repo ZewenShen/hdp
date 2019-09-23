@@ -34,4 +34,23 @@ class Characteristic:
         f = interpolate.interp1d(domain, self.u0, 'cubic')
         return f(X)
         
+class MacCormack:
+    """
+    u_t + [f(u)]_x = 0
+    """
+    def __init__(self, domain, f):
+        assert domain.ic is not None
+        self.domain = domain
+        self.u0_func = domain.ic
+        self.f = f
+    
+    def solve(self, nx, nt):
+        a, b, T = self.domain.a, self.domain.b, self.domain.T
+        hx, ht = self.domain.get_discretization_size(nx, nt)
+        X = np.linspace(a, b, nx+1)
+        u0 = self.u0_func(X, 0); self.u0 = u0
+
+        for i in range(1, nt+1):
+            pass
+
 
