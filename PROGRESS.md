@@ -167,7 +167,7 @@ Add penalty terms (1. make delta monotonic. 2. avoid negative or > stock price o
 ### Advantage of DGM
 Able to get Greek on the whole domain. Able to know the loss when computing solutions.
 
-# 9.26
+# 9.24
 
 ## Progress
 
