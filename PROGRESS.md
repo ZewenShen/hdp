@@ -172,3 +172,9 @@ Able to get Greek on the whole domain. Able to know the loss when computing solu
 ## Progress
 
 Made some helper functions for deep learning experiments. Attempts: 1. add another penalty term that requires the first derivative to be always non-positive or non-negative; 2. consider boundary conditions in the loss function. Learned heat equation's properties. Proved the error bound for the deep Galerkin method given the loss on the whole domain.
+
+# 10.1
+
+## Progress
+
+Explored maximum principle in depth. Computed the error bound for the n dim inhomogeneous Black-Scholes equation. Learned basic discrete fourier transformation.
