@@ -178,3 +178,25 @@ Made some helper functions for deep learning experiments. Attempts: 1. add anoth
 ## Progress
 
 Explored maximum principle in depth. Computed the error bound for the n dim inhomogeneous Black-Scholes equation. Learned basic discrete fourier transformation.
+
+# 10.8
+
+## Progress
+
+Learned regular/discrete Fourier transform and FFT. Learned the characteristic function of probability densities. Read Option valuation using the fast Fourier transform (Carr & Madan) using Efficient Options Pricing Using the Fast Fourier Transform as supplementary material. Implemented Carr & Madan method for 1D European option.
+
+### Why log transform of S when Fourier time stepping is used
+Such that we can get a constant variable PDE, which will be the target of Fourier time stepping method. And theoretically, the target function should be defined on R to make it Fourier transformable.
+
+### Fourier transform & Fourier inverse transform are basically the same thing. If we did the inverse trans first, the resulting function will also be in the frequency domain
+
+### TODO: Why 0 point must be picked in DFT?
+
+### Idea of Carr-Madan method
+If the characteristic function of the density function is known, we can give the fourier transformed option price in an analytical form. Then we can do FFT to transform it back to real price.
+
+### The complex part of approximated solution
+Mathematically speaking, there would be no complex part, since Fourier + Fourier inverse give the original option price, which is real. But truncation error would possibly lead to complex number. In this case, we just discard it.
+
+### Time complexity of Carr-Madan
+Let dimension be d. Then the complexity would be $O(N^d\log N)$, while the FDM complexity (assuming tridiagonal matrix) is $O(N^{2d})$.
