@@ -1,3 +1,3 @@
-# hdpde
+# hdp
 
-[![Build Status](https://travis-ci.com/Walden-Shen/hdpde.svg?token=NZ9PB6ypKztM9f8YxiMW&branch=master)](https://travis-ci.com/Walden-Shen/hdpde)
+[![Build Status](https://travis-ci.com/Walden-Shen/hdp.svg?branch=master)](https://travis-ci.com/Walden-Shen/hdp)
