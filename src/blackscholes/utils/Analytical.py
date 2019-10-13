@@ -20,37 +20,37 @@ class Analytical_Sol:
         
         #checking if strike price is an array or not
         if(not(hasattr(strike_price, "__len__"))):
-            self.strike_price = np.ones(len(spot_price))*strike_price
+            self.strike_price = np.ones(self.spot_price.size)*strike_price
         else:
             self.strike_price = strike_price
 
         #checking if time to maturity is an array or not
         if(not(hasattr(time_to_maturity, "__len__"))):
-            self.time_to_maturity = np.ones(len(spot_price))*time_to_maturity
+            self.time_to_maturity = np.ones(self.spot_price.size)*time_to_maturity
         else:
             self.time_to_maturity = time_to_maturity
 
         #checking if interest rate is an array or not
         if(not(hasattr(interest_rate, "__len__"))):
-            self.interest_rate = np.ones(len(spot_price))*interest_rate
+            self.interest_rate = np.ones(self.spot_price.size)*interest_rate
         else:
             self.interest_rate = interest_rate
 
         #checking if volatility is an array or not
         if(not(hasattr(sigma, "__len__"))):
-            self.sigma = np.ones(len(spot_price))*sigma
+            self.sigma = np.ones(self.spot_price.size)*sigma
         else:
             self.sigma = sigma
         
         #checking if dividend yield is an array or not
         if(not(hasattr(dividend_yield, "__len__"))):
-            self.dividend_yield = np.ones(len(spot_price))*dividend_yield
+            self.dividend_yield = np.ones(self.spot_price.size)*dividend_yield
         else:
             self.dividend_yield = dividend_yield                                         
             
     #private method for erf function    
     def bls_erf_value(self,input_number):
-        erf_out = 0.5*(1 + sp.special.erf(input_number/sqrt(2.0)))
+        erf_out = 0.5*(1 + erf(input_number/sqrt(2.0)))
         return erf_out
     
     #vectorized method to price call option
