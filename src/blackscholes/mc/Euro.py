@@ -54,7 +54,7 @@ class Euro:
         return np.mean(payoff) * np.exp(-self.random_walk.ir * self.random_walk.T)
 
     def price_importance_sampling(self, path_num):
-        assert hasattr(self.payoff_func, 'strike'), 'Meta info of the payoff function lossing: strike'
+        assert hasattr(self.payoff_func, 'strike'), 'Meta info of the payoff function lost: strike'
         strike = self.payoff_func.strike
         self.simulation_result, Zs = self.random_walk.importance_sampling_simulate_T(path_num, strike)
         drift_vec = self.random_walk.ir - self.random_walk.dividend_vec

@@ -12,7 +12,7 @@ class Test(unittest.TestCase):
         T = 1.0  # maturity date
         r = 0.05  # risk-less short rates
         sigma = 0.3  # volatility
-        f = CarrEuroCall1d(S0, T, sigma, r, K).price(2**10, 0.0409061543436171)
+        f = CarrEuroCall1d(T, S0, r, sigma).pricing_func(2**10, 0.0409061543436171)
         assert abs(f(K) - 19.69745057137447) < 1e-10
         
 

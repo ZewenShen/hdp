@@ -6,12 +6,11 @@ from scipy import interpolate
 
 class CarrEuroCall1d:
 
-    def __init__(self, S0, T, vol, ir, strike, alpha=1.5):
-        self.x0 = np.log(S0) # stock price at time 0
+    def __init__(self, T, S0, ir, vol, alpha=1.5):
         self.T = T
-        self.vol = vol
+        self.x0 = np.log(S0) # stock price at time 0
         self.ir = ir
-        self.strike = strike
+        self.vol = vol
         self.alpha = alpha
 
     def char_func(self, v):
@@ -25,7 +24,7 @@ class CarrEuroCall1d:
         Psi = C * self.char_func(v - 1j*(alpha+1)) / ((alpha+1j*v) * (alpha+1j*v+1))
         return Psi
 
-    def price(self, N, strike_grid_size):
+    def pricing_func(self, N, strike_grid_size):
         int_grid_size = 2*np.pi/(N*strike_grid_size)
         beta = self.x0 - strike_grid_size*N/2 # lower bound
         k_vec = np.array([beta + i * strike_grid_size for i in range(N)])
