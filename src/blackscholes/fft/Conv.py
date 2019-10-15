@@ -11,7 +11,7 @@ class ConvEuro:
         self.payoff_func = payoff_func
         self.strike = payoff_func.strike
         self.T = T
-        self.dim = len(S0_vec)
+        self.dim = len(vol_vec)
         self.x0_vec = np.log(S0_vec/self.strike) # normalized stock price at time 0
         self.ir = ir
         self.vol_vec = vol_vec
@@ -22,17 +22,18 @@ class ConvEuro:
         time_grid_size_vec = 2 * np.pi / (N_vec * freq_grid_size_vec)
         freq_grid_start = -0.5 * N_vec * freq_grid_size_vec
         time_grid_start = -0.5 * N_vec * time_grid_size_vec
-        V, G = np.zeros(N_vec), np.zeros(N_vec)
+        V, G, phi = np.zeros(N_vec), np.zeros(N_vec), np.zeros(N_vec)
         for k_vec in ConvEuro.iterable_k_vec(N_vec):
+            k_vec = np.array(k_vec)
             omega = freq_grid_start + k_vec * freq_grid_size_vec
             y = time_grid_start + k_vec * time_grid_size_vec
-            V[k_vec] = self.payoff_func(np.exp(y)*self.strike)
+            V[k_vec] = self.payoff_func(np.exp(y) * self.strike) # denormalize price
             G[k_vec] = ConvEuro.G(k_vec, N_vec)
-            
-
-
-
-
+            phi[k_vec] = self.char_func(-omega)
+        print(V, G, phi)
+        fourier_price = phi * np.fft.ifftn(V * G)
+        price = np.fft.fftn(fourier_price)
+        return price * np.exp(-self.ir * self.T) / (2 * np.pi)**self.dim
 
     def char_func(self, omega_vec):
         mu_vec = self.T * (self.ir - self.dividend_vec - 0.5*self.vol_vec**2)

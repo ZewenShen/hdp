@@ -17,6 +17,17 @@ class Test(unittest.TestCase):
         N_vec = [3, 3]
         assert ConvEuro.iterable_k_vec(N_vec) == [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2)]
 
+    def test_1dpricing(self):
+        S0 = np.array([100.0])  # index level
+        K = 90.0  # option strike
+        T = 1.0  # maturity date
+        r = 0.05  # risk-less short rates
+        sigma = np.array([0.3])  # volatility
+        dividend_vec = np.zeros(1)
+        corr_mat = np.array([[1]])
+        payoff_func = lambda x: np.maximum(x - K, 0)
+        payoff_func.strike = K
+        print(ConvEuro(payoff_func, T, S0, r, sigma, dividend_vec, corr_mat).pricing_func(np.array([128]), np.array([0.005])))
         
 
 if __name__ == '__main__':
