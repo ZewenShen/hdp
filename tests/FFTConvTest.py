@@ -12,6 +12,11 @@ class Test(unittest.TestCase):
         assert (ConvEuro.R(k_vec, N_vec) == np.array([0.5, 1, 1, 1, 0.5])).all()
         assert ConvEuro.Z(k_vec, N_vec) == 0.25
         assert ConvEuro.G(k_vec, N_vec) == 0.25
+
+    def test_iterable_k_vec(self):
+        N_vec = [3, 3]
+        assert ConvEuro.iterable_k_vec(N_vec) == [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2)]
+
         
 
 if __name__ == '__main__':
