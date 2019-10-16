@@ -22,16 +22,17 @@ class ConvEuro:
         time_grid_size_vec = 2 * np.pi / (N_vec * freq_grid_size_vec)
         freq_grid_start = -0.5 * N_vec * freq_grid_size_vec
         time_grid_start = -0.5 * N_vec * time_grid_size_vec
-        V, G, phi = np.zeros(N_vec), np.zeros(N_vec), np.zeros(N_vec)
+        V, G, phi = np.zeros(N_vec), np.zeros(N_vec), np.zeros(N_vec, dtype=np.complex)
         for k_vec in ConvEuro.iterable_k_vec(N_vec):
             k_vec = np.array(k_vec)
             omega = freq_grid_start + k_vec * freq_grid_size_vec
             y = time_grid_start + k_vec * time_grid_size_vec
-            V[k_vec] = self.payoff_func(np.exp(y) * self.strike) # denormalize price
+            V[k_vec] = self.payoff_func(np.exp(y)) # denormalize price
             G[k_vec] = ConvEuro.G(k_vec, N_vec)
             phi[k_vec] = self.char_func(-omega)
-        print(V, G, phi)
+        # print(V* G, phi)
         fourier_price = phi * np.fft.ifftn(V * G)
+        print(phi, V * G)
         price = np.fft.fftn(fourier_price)
         return price * np.exp(-self.ir * self.T) / (2 * np.pi)**self.dim
 

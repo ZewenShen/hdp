@@ -27,7 +27,7 @@ class Test(unittest.TestCase):
         corr_mat = np.array([[1]])
         payoff_func = lambda x: np.maximum(x - K, 0)
         payoff_func.strike = K
-        print(ConvEuro(payoff_func, T, S0, r, sigma, dividend_vec, corr_mat).pricing_func(np.array([128]), np.array([0.005])))
+        print(ConvEuro(payoff_func, T, S0, r, sigma, dividend_vec, corr_mat).pricing_func(np.array([1280]), np.array([0.05])))
         
 
 if __name__ == '__main__':
