@@ -6,13 +6,12 @@ from scipy import interpolate
 
 class ConvEuro:
 
-    def __init__(self, payoff_func, T, S0_vec, ir, vol_vec, dividend_vec, corr_mat):
+    def __init__(self, payoff_func, T, ir, vol_vec, dividend_vec, corr_mat):
         assert hasattr(payoff_func, 'strike'), 'Meta info of the payoff function lost: strike'
         self.payoff_func = payoff_func
         self.strike = payoff_func.strike
         self.T = T
         self.dim = len(vol_vec)
-        self.x0_vec = np.log(S0_vec/self.strike) # normalized stock price at time 0
         self.ir = ir
         self.vol_vec = vol_vec
         self.dividend_vec = dividend_vec
@@ -20,8 +19,13 @@ class ConvEuro:
 
     def pricing_func(self, N_vec, freq_grid_size_vec):
         time_grid_size_vec = 2 * np.pi / (N_vec * freq_grid_size_vec)
+        print(freq_grid_size_vec, time_grid_size_vec)
         freq_grid_start = -0.5 * N_vec * freq_grid_size_vec
         time_grid_start = -0.5 * N_vec * time_grid_size_vec
+        print(freq_grid_start, time_grid_start)
+        b = time_grid_start+np.arange(N_vec[0])*time_grid_size_vec
+        a = np.exp(b)
+        
         V, G, phi = np.zeros(N_vec), np.zeros(N_vec), np.zeros(N_vec, dtype=np.complex)
         for k_vec in ConvEuro.iterable_k_vec(N_vec):
             k_vec = np.array(k_vec)
@@ -30,11 +34,15 @@ class ConvEuro:
             V[k_vec] = self.payoff_func(np.exp(y)) # denormalize price
             G[k_vec] = ConvEuro.G(k_vec, N_vec)
             phi[k_vec] = self.char_func(-omega)
-        # print(V* G, phi)
+        print(V, G)
         fourier_price = phi * np.fft.ifftn(V * G)
-        print(phi, V * G)
-        price = np.fft.fftn(fourier_price)
-        return price * np.exp(-self.ir * self.T) / (2 * np.pi)**self.dim
+        
+        # print(phi[5120], V[5120], G[5120])
+        # print(fourier_price, fourier_price*np.array([1, -1]*5120))
+        price = np.fft.fftn(fourier_price*np.array([1, -1]*256))
+        # print(fourier_price, price[255:260])
+        # print(b[5120], a[5120])
+        return price * np.exp(-self.ir * self.T)
 
     def char_func(self, omega_vec):
         mu_vec = self.T * (self.ir - self.dividend_vec - 0.5*self.vol_vec**2)
