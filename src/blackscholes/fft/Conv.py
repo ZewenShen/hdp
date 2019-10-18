@@ -6,9 +6,10 @@ from scipy import interpolate
 
 class ConvEuro:
 
-    def __init__(self, payoff_func, T, ir, vol_vec, dividend_vec, corr_mat):
+    def __init__(self, payoff_func, S0_vec, T, ir, vol_vec, dividend_vec, corr_mat):
         assert hasattr(payoff_func, 'strike'), 'Meta info of the payoff function lost: strike'
         self.payoff_func = payoff_func
+        self.S0_vec = S0_vec
         self.strike = payoff_func.strike
         self.T = T
         self.dim = len(vol_vec)
@@ -17,31 +18,29 @@ class ConvEuro:
         self.dividend_vec = dividend_vec
         self.corr_mat = corr_mat
 
-    def pricing_func(self, N_vec, freq_grid_size_vec):
-        time_grid_size_vec = 2 * np.pi / (N_vec * freq_grid_size_vec)
-        print(freq_grid_size_vec, time_grid_size_vec)
-        freq_grid_start = -0.5 * N_vec * freq_grid_size_vec
-        time_grid_start = -0.5 * N_vec * time_grid_size_vec
-        print(freq_grid_start, time_grid_start)
-        b = time_grid_start+np.arange(N_vec[0])*time_grid_size_vec
-        a = np.exp(b)
-        
+    def pricing_func(self, N_vec):
+        L_vec = self.vol_vec * self.T**0.5
+        dy = L_vec / N_vec
+        dx = dy
+        du = 2 * np.pi / L_vec
+        eps_y = np.zeros_like(N_vec)
+        eps_x = np.zeros_like(N_vec)
+        grid = np.array([np.arange(N) for N in N_vec])
+        y = eps_y + (grid - N_vec / 2) * dy
+        x = eps_x + (grid - N_vec / 2) * dx
+        u = (grid - N_vec / 2) * du
+
         V, G, phi = np.zeros(N_vec), np.zeros(N_vec), np.zeros(N_vec, dtype=np.complex)
         for k_vec in ConvEuro.iterable_k_vec(N_vec):
             k_vec = np.array(k_vec)
-            omega = freq_grid_start + k_vec * freq_grid_size_vec
-            y = time_grid_start + k_vec * time_grid_size_vec
-            V[k_vec] = self.payoff_func(np.exp(y)) # denormalize price
+            V[k_vec] = self.payoff_func(self.S0_vec * np.exp(y[k_vec])) # denormalize price
             G[k_vec] = ConvEuro.G(k_vec, N_vec)
-            phi[k_vec] = self.char_func(-omega)
-        print(V, G)
-        fourier_price = phi * np.fft.ifftn(V * G)
+            phi[k_vec] = self.char_func(-u[k_vec])
+        # print(V* G, V, G)
+        fourier_price = np.exp(1j * grid * (y[:, 0] - x[:, 0]) * du) * phi * np.fft.ifftn(V * G)
         
-        # print(phi[5120], V[5120], G[5120])
-        # print(fourier_price, fourier_price*np.array([1, -1]*5120))
-        price = np.fft.fftn(fourier_price*np.array([1, -1]*256))
+        price = np.fft.fftn(fourier_price)
         # print(fourier_price, price[255:260])
-        # print(b[5120], a[5120])
         return price * np.exp(-self.ir * self.T)
 
     def char_func(self, omega_vec):
@@ -73,3 +72,47 @@ class ConvEuro:
     def iterable_k_vec(N_vec):
         k_range = [range(n) for n in N_vec]
         return list(itertools.product(*k_range))
+
+
+class ConvEuro1d:
+
+    def __init__(self, payoff_func, S0, T, ir, vol, dividend):
+        assert hasattr(payoff_func, 'strike'), 'Meta info of the payoff function lost: strike'
+        self.payoff_func = payoff_func
+        self.strike = payoff_func.strike
+        self.S0 = S0
+        self.T = T
+        self.ir = ir
+        self.vol = vol
+        self.dividend = dividend
+
+    def pricing_func(self, N_vec):
+        L_vec = self.vol_vec * self.T**0.5
+        dy = L_vec / N_vec
+        dx = dy
+        du = 2 * np.pi / L_vec
+        eps_y = np.zeros_like(N_vec)
+        eps_x = np.zeros_like(N_vec)
+        grid = np.array([np.arange(N) for N in N_vec])
+        y = eps_y + (grid - N_vec / 2) * dy
+        x = eps_x + (grid - N_vec / 2) * dx
+        u = (grid - N_vec / 2) * du
+
+        V, G, phi = np.zeros(N_vec), np.zeros(N_vec), np.zeros(N_vec, dtype=np.complex)
+        for k_vec in ConvEuro.iterable_k_vec(N_vec):
+            k_vec = np.array(k_vec)
+            V[k_vec] = self.payoff_func(self.S0_vec * np.exp(y[k_vec])) # denormalize price
+            G[k_vec] = ConvEuro.G(k_vec, N_vec)
+            phi[k_vec] = self.char_func(-u[k_vec])
+        # print(V* G, V, G)
+        fourier_price = np.exp(1j * grid * (y[:, 0] - x[:, 0]) * du) * phi * np.fft.ifftn(V * G)
+        
+        price = np.fft.fftn(fourier_price)
+        # print(fourier_price, price[255:260])
+        return price * np.exp(-self.ir * self.T)
+
+    def char_func(self, omega):
+        mu_vec = self.T * (self.ir - self.dividend - 0.5*self.vol**2)
+        cf_val1 = 1j * np.dot(mu_vec, omega)
+        
+        return cf_val

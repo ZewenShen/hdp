@@ -21,14 +21,14 @@ class Test(unittest.TestCase):
         K = 1  # option strike
         T = 1.0  # maturity date
         r = 0.05  # risk-less short rates
+        S0 = np.array([1])
         sigma = np.array([0.3])  # volatility
         dividend_vec = np.zeros(1)
         corr_mat = np.array([[1]])
         payoff_func = lambda x: np.maximum(x - K, 0)
         payoff_func.strike = K
-        N = 512
-        price = ConvEuro(payoff_func, T, r, sigma, dividend_vec, corr_mat).pricing_func(np.array([N]), np.array([(2*np.pi/N)**0.5]))
-        print(price)
+        price = ConvEuro(payoff_func, S0, T, r, sigma, dividend_vec, corr_mat).pricing_func(np.array([1280]))
+        print(price[5120].real)
         
 
 if __name__ == '__main__':
