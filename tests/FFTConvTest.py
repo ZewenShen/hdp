@@ -1,6 +1,6 @@
 import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(__file__))+"/../src")
-from blackscholes.fft.Conv import ConvEuro
+from blackscholes.fft.Conv import ConvEuro, ConvEuro1d
 import unittest
 import numpy as np
 
@@ -18,18 +18,16 @@ class Test(unittest.TestCase):
         assert ConvEuro.iterable_k_vec(N_vec) == [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2)]
 
     def test_1dpricing(self):
-        K = 1  # option strike
-        T = 1.0  # maturity date
-        r = 0.05  # risk-less short rates
-        S0 = np.array([1])
-        sigma = np.array([0.3])  # volatility
-        dividend_vec = np.zeros(1)
-        corr_mat = np.array([[1]])
-        payoff_func = lambda x: np.maximum(x - K, 0)
+        K = 110  # option strike
+        T = 0.1  # maturity date
+        r = 0.1  # risk-less short rates
+        dividend = 0
+        S0 = 100
+        sigma = 0.25  # volatility
+        payoff_func = lambda x: np.maximum(K - x, 0)
         payoff_func.strike = K
-        price = ConvEuro(payoff_func, S0, T, r, sigma, dividend_vec, corr_mat).pricing_func(np.array([1280]))
-        print(price[5120].real)
-        
+        price = ConvEuro1d(payoff_func, S0, T, r, sigma, dividend).pricing_func(9)
+        assert abs(price - 9.49503156495164) < 1e-10
 
 if __name__ == '__main__':
     unittest.main()

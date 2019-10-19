@@ -86,33 +86,34 @@ class ConvEuro1d:
         self.vol = vol
         self.dividend = dividend
 
-    def pricing_func(self, N_vec):
-        L_vec = self.vol_vec * self.T**0.5
-        dy = L_vec / N_vec
-        dx = dy
-        du = 2 * np.pi / L_vec
-        eps_y = np.zeros_like(N_vec)
-        eps_x = np.zeros_like(N_vec)
-        grid = np.array([np.arange(N) for N in N_vec])
-        y = eps_y + (grid - N_vec / 2) * dy
-        x = eps_x + (grid - N_vec / 2) * dx
-        u = (grid - N_vec / 2) * du
+    def pricing_func(self, n):
+        N = 2**n
+        L = self.vol * self.T**0.5 * 20
+        dy, dx = L / N, L / N
+        du = 2 * np.pi / L
+        eps_y, eps_x = 0, 0
+        grid = np.arange(N)
+        grid_m = (-1)**grid
+        y, x = eps_y + (grid - N / 2) * dy,  eps_x + (grid - N / 2) * dx
+        u = (grid - N / 2) * du
 
-        V, G, phi = np.zeros(N_vec), np.zeros(N_vec), np.zeros(N_vec, dtype=np.complex)
-        for k_vec in ConvEuro.iterable_k_vec(N_vec):
-            k_vec = np.array(k_vec)
-            V[k_vec] = self.payoff_func(self.S0_vec * np.exp(y[k_vec])) # denormalize price
-            G[k_vec] = ConvEuro.G(k_vec, N_vec)
-            phi[k_vec] = self.char_func(-u[k_vec])
-        # print(V* G, V, G)
-        fourier_price = np.exp(1j * grid * (y[:, 0] - x[:, 0]) * du) * phi * np.fft.ifftn(V * G)
+        w = np.ones(N)
+        w[0] = 0.5; w[-1] = 0.5
+
+        V = self.payoff_func(self.S0 * np.exp(y))
+
+        phi = self.log_char_func(-u)
+        fourier_price = np.exp(1j * grid * (y[0] - x[0]) * du) * phi * np.fft.ifftn(V * w * grid_m)
         
         price = np.fft.fftn(fourier_price)
-        # print(fourier_price, price[255:260])
-        return price * np.exp(-self.ir * self.T)
+        C = price * np.exp(-self.ir * self.T + (1j * u * (y[0] - x[0]))) * grid_m
+        return C[int(N/2)]
 
-    def char_func(self, omega):
-        mu_vec = self.T * (self.ir - self.dividend - 0.5*self.vol**2)
-        cf_val1 = 1j * np.dot(mu_vec, omega)
-        
-        return cf_val
+    def log_char_func(self, u):
+        mu = self.ir - self.dividend
+        logS0 = 0
+        val = np.exp(1j * u * (logS0 + mu * self.T - np.log(self.char_func(-1j, 0))))
+        return val * self.char_func(u, 0)
+
+    def char_func(self, u, mu):
+        return np.exp(1j * u * mu * self.T - self.vol**2 * u**2 * self.T / 2)
