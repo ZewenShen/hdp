@@ -18,8 +18,9 @@ class ConvEuro:
         self.dividend_vec = dividend_vec
         self.corr_mat = corr_mat
 
-    def pricing_func(self, N_vec):
-        L_vec = self.vol_vec * self.T**0.5
+    def pricing_func(self, n_vec):
+        N_vec = n_vec ** 2
+        L_vec = self.vol_vec * self.T**0.5 * 20
         dy = L_vec / N_vec
         dx = dy
         du = 2 * np.pi / L_vec
@@ -29,19 +30,23 @@ class ConvEuro:
         y = eps_y + (grid - N_vec / 2) * dy
         x = eps_x + (grid - N_vec / 2) * dx
         u = (grid - N_vec / 2) * du
+        eps_u = np.zeros_like(N_vec)
 
         V, G, phi = np.zeros(N_vec), np.zeros(N_vec), np.zeros(N_vec, dtype=np.complex)
         for k_vec in ConvEuro.iterable_k_vec(N_vec):
             k_vec = np.array(k_vec)
-            V[k_vec] = self.payoff_func(self.S0_vec * np.exp(y[k_vec])) # denormalize price
+            y_tmp = eps_y + ((k_vec - N_vec) / 2) * dy
+            u = eps_u + ((k_vec - N_vec) / 2) * du
+            V[k_vec] = self.payoff_func(self.S0_vec * np.exp(y_tmp)) # denormalize price
             G[k_vec] = ConvEuro.G(k_vec, N_vec)
-            phi[k_vec] = self.char_func(-u[k_vec])
+            phi[k_vec] = self.char_func(-u)
         # print(V* G, V, G)
         fourier_price = np.exp(1j * grid * (y[:, 0] - x[:, 0]) * du) * phi * np.fft.ifftn(V * G)
-        
+        print(fourier_price)
         price = np.fft.fftn(fourier_price)
         # print(fourier_price, price[255:260])
-        return price * np.exp(-self.ir * self.T)
+        print(price)
+        return (price * np.exp(-self.ir * self.T))[0, (N_vec/2).astype(int)]
 
     def char_func(self, omega_vec):
         mu_vec = self.T * (self.ir - self.dividend_vec - 0.5*self.vol_vec**2)
