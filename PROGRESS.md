@@ -200,3 +200,9 @@ Mathematically speaking, there would be no complex part, since Fourier + Fourier
 
 ### Time complexity of Carr-Madan
 Let dimension be d. Then the complexity would be $O(N^d\log N)$, while the FDM complexity (assuming tridiagonal matrix) is $O(N^{2d})$.
+
+# 10.15
+Read "Multi-asset option pricing using a parallel Fourier-based technique (C. C. W. Leentvaar, C. W. Oosterlee)" multiple times, trying to implement it but failed.
+
+# 10.22
+Implemented Conv method for the 1d case based on "A fast and accurate FFT-based method for pricing early-exercise options under Levy processes (R. Lord et al). Derived the characteristic function for n-d GBM. In the process of extending the 1d case to the n-d case. 
