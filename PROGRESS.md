@@ -206,3 +206,6 @@ Read "Multi-asset option pricing using a parallel Fourier-based technique (C. C.
 
 # 10.22
 Implemented Conv method for the 1d case based on "A fast and accurate FFT-based method for pricing early-exercise options under Levy processes (R. Lord et al). Derived the characteristic function for n-d GBM. In the process of extending the 1d case to the n-d case. 
+
+### Why option prices at the middle of interval are far more accurate than ones at the end
+Same idea as the Monte-Carlo method for highly out-of-money options.
