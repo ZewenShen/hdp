@@ -40,9 +40,8 @@ class Test(unittest.TestCase):
         payoff_func.strike = K
         corr_mat = np.array([[1]])
         a = ConvEuro(payoff_func, S0_vec, T, r, sigma, dividend_vec, corr_mat)
-
         price = a.pricing_func(np.array([9]))
-        print(price)
+        assert abs(price - 9.49503156495164) < 1e-10
 
 if __name__ == '__main__':
     unittest.main()
