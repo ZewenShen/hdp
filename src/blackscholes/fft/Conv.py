@@ -14,8 +14,7 @@ class ConvEuro:
         self.ir = ir
         self.vol_vec = vol_vec
         self.dividend_vec = dividend_vec
-        self.corr_mat = corr_mat
-        self.L = np.linalg.cholesky(corr_mat)
+        self.cov_mat = (self.vol_vec[np.newaxis].T @ self.vol_vec[np.newaxis]) * corr_mat
 
     def pricing_func(self, n_vec):
         N_vec = 2**n_vec
@@ -43,12 +42,9 @@ class ConvEuro:
 
     def char_func(self, omega_vec):
         mu_vec = self.ir - self.dividend_vec - 0.5*self.vol_vec**2
-        cf_val1 = 1j * np.dot(mu_vec, omega_vec)
-        cf_val2 = 0
-        for j in range(self.dim):
-            for k in range(self.dim):
-                cf_val2 += self.corr_mat[j, k] * self.vol_vec[j] * self.vol_vec[k] * omega_vec[j] * omega_vec[k]
-        cf_val = np.exp(self.T*(cf_val1 - cf_val2/2))
+        img = 1j * np.dot(mu_vec, omega_vec)
+        real = omega_vec @ self.cov_mat @ omega_vec / 2
+        cf_val = np.exp(self.T*(img - real))
         return cf_val
 
     # def char_func(self, omega_vec):
