@@ -7,10 +7,8 @@ from scipy import interpolate
 class ConvEuro:
 
     def __init__(self, payoff_func, S0_vec, T, ir, vol_vec, dividend_vec, corr_mat):
-        assert hasattr(payoff_func, 'strike'), 'Meta info of the payoff function lost: strike'
         self.payoff_func = payoff_func
         self.S0_vec = S0_vec
-        self.strike = payoff_func.strike
         self.T = T
         self.dim = len(vol_vec)
         self.ir = ir
@@ -21,49 +19,47 @@ class ConvEuro:
 
     def pricing_func(self, n_vec):
         N_vec = 2**n_vec
-        L_vec = self.vol_vec * self.T**0.5 * 20
+        L_vec = self.vol_vec * self.T**0.5 * 30
         dy = L_vec / N_vec
-        # ds = dy
         du = 2 * np.pi / L_vec
-        eps_y = np.zeros_like(N_vec)
-        # eps_s = np.zeros_like(N_vec)
         grid = np.array([np.arange(N) for N in N_vec])
-        y = eps_y + (grid - N_vec / 2) * dy
-        # s = eps_s + (grid - N_vec / 2) * ds
-        u = (grid - N_vec / 2) * du
-
+        if np.array_equal(N_vec, np.full(N_vec.shape, N_vec[0])):
+            y = (grid - (N_vec[np.newaxis].T / 2)) * dy[np.newaxis].T
+            u = (grid - N_vec[np.newaxis].T / 2) * du[np.newaxis].T
+        else:
+            y = (grid - N_vec / 2) * dy
+            u = (grid - N_vec / 2) * du
         V, G, phi = np.zeros(N_vec), np.zeros(N_vec), np.zeros(N_vec, dtype=np.complex)
         for k_vec in ConvEuro.iterable_k_vec(N_vec):
             k_vec = np.array(k_vec)
             cur_y = ConvEuro.k2point(k_vec, y)
             cur_u = ConvEuro.k2point(k_vec, u)
-            V[k_vec] = self.payoff_func(self.S0_vec * np.exp(cur_y)) # denormalize price
-            G[k_vec] = ConvEuro.G(k_vec, N_vec)
-            phi[k_vec] = self.char_func(-cur_u)
+            V[tuple(k_vec)] = self.payoff_func(self.S0_vec * np.exp(cur_y)) # denormalize price
+            G[tuple(k_vec)] = ConvEuro.G(k_vec, N_vec)
+            phi[tuple(k_vec)] = self.char_func(-cur_u)
         fourier_price = phi * np.fft.ifftn(V * G)
         price = np.fft.fftn(fourier_price)
         return abs(price.real[tuple((N_vec/2).astype(int))] * np.exp(-self.ir * self.T))
 
-    # def char_func(self, omega_vec):
-    #     mu_vec = self.T * (self.ir - self.dividend_vec - 0.5*self.vol_vec**2)
-    #     cf_val1 = 1j * np.dot(mu_vec, omega_vec)
-    #     cf_val2 = 0
-    #     for j in range(self.dim):
-    #         for k in range(self.dim):
-    #             cf_val2 += self.corr_mat[j, k] * self.vol_vec[j] * self.vol_vec[k] * omega_vec[j] * omega_vec[k]
-    #     cf_val = np.exp(cf_val1 - self.T*cf_val2)
-    #     return cf_val
     def char_func(self, omega_vec):
         mu_vec = self.ir - self.dividend_vec - 0.5*self.vol_vec**2
         cf_val1 = 1j * np.dot(mu_vec, omega_vec)
         cf_val2 = 0
-        for i in range(self.dim):
-            L_sum = 0
-            for j in range(self.dim):
-                L_sum += self.L[i, j]**2
-            cf_val2 += self.vol_vec[i]**2 * omega_vec[i]**2 * L_sum
+        for j in range(self.dim):
+            for k in range(self.dim):
+                cf_val2 += self.corr_mat[j, k] * self.vol_vec[j] * self.vol_vec[k] * omega_vec[j] * omega_vec[k]
         cf_val = np.exp(self.T*(cf_val1 - cf_val2/2))
         return cf_val
+
+    # def char_func(self, omega_vec):
+    #     mu_vec = self.ir - self.dividend_vec - 0.5*self.vol_vec**2
+    #     cf_val1 = 1j * np.dot(mu_vec, omega_vec)
+    #     cf_val2 = 0
+    #     for i in range(self.dim):
+    #         L_sum = np.sum(self.L[i]**2)
+    #         cf_val2 += self.vol_vec[i]**2 * omega_vec[i]**2 * L_sum
+    #     cf_val = np.exp(self.T*(cf_val1 - cf_val2/2))
+    #     return cf_val
 
     @staticmethod
     def R(k_vec, N_vec):
@@ -96,9 +92,7 @@ class ConvEuro:
 class ConvEuro1d:
 
     def __init__(self, payoff_func, S0, T, ir, vol, dividend):
-        assert hasattr(payoff_func, 'strike'), 'Meta info of the payoff function lost: strike'
         self.payoff_func = payoff_func
-        self.strike = payoff_func.strike
         self.S0 = S0
         self.T = T
         self.ir = ir

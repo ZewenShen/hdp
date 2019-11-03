@@ -37,11 +37,29 @@ class Test(unittest.TestCase):
         S0_vec = np.array([100])
         sigma = np.array([0.25])  # volatility
         payoff_func = lambda x: np.maximum(K - x, 0)
-        payoff_func.strike = K
         corr_mat = np.array([[1]])
-        a = ConvEuro(payoff_func, S0_vec, T, r, sigma, dividend_vec, corr_mat)
-        price = a.pricing_func(np.array([9]))
-        assert abs(price - 9.49503156495164) < 1e-10
+        euro1d = ConvEuro(payoff_func, S0_vec, T, r, sigma, dividend_vec, corr_mat)
+        price = euro1d.pricing_func(np.array([9]))
+        assert abs(price - 9.495345187808168) < 1e-10
+    
+    def test_conv2d(self):
+        T = 182/365
+        strike = 50
+        asset_num = 2
+        init_price_vec = np.array([110, 60])
+        vol_vec = np.array([0.4, 0.2])
+        ir = 0.1
+        dividend_vec = 0*np.ones(asset_num)
+        corr_mat = np.eye(asset_num)
+        corr_mat[0, 1] = 0.4
+        corr_mat[1, 0] = 0.4
+        def test_payoff(l):
+            return max(l[0] - l[1] - strike, 0)
+        euro2d = ConvEuro(test_payoff, init_price_vec, T, ir, vol_vec, dividend_vec, corr_mat)
+        price = euro2d.pricing_func(np.array([6, 6]))
+        assert abs(price - 12.549345239160479) < 1e-10
+        real = 12.5583468
+        assert abs(price-real) / real < 0.00071678
 
 if __name__ == '__main__':
     unittest.main()
