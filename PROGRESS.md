@@ -209,3 +209,6 @@ Implemented Conv method for the 1d case based on "A fast and accurate FFT-based 
 
 ### Why option prices at the middle of interval are far more accurate than ones at the end
 Same idea as the Monte-Carlo method for highly out-of-money options.
+
+# 10.29
+Continue writing the thesis. Finish the writing of n-d case. Found a bug related to FFT and characteristic function in the thesis on Monday.
