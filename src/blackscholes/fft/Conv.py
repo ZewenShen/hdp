@@ -1,6 +1,5 @@
 import numpy as np
 import itertools
-from scipy import interpolate
 
 # Convolution method for Black Scholes model
 
@@ -14,35 +13,58 @@ class ConvEuro:
         self.ir = ir
         self.vol_vec = vol_vec
         self.dividend_vec = dividend_vec
+        self.mu_vec = self.ir - self.dividend_vec - 0.5*self.vol_vec**2
         self.cov_mat = (self.vol_vec[np.newaxis].T @ self.vol_vec[np.newaxis]) * corr_mat
+        self.price_mat = None
 
-    def pricing_func(self, n_vec):
-        N_vec = 2**n_vec
+    def price(self, n_vec):
+        N_vec = 2**n_vec; self.N_vec = N_vec
         L_vec = self.vol_vec * self.T**0.5 * 30
         dy = L_vec / N_vec
         du = 2 * np.pi / L_vec
         grid = np.array([np.arange(N) for N in N_vec])
         if np.array_equal(N_vec, np.full(N_vec.shape, N_vec[0])):
-            y = (grid - (N_vec[np.newaxis].T / 2)) * dy[np.newaxis].T
+            y = (grid - N_vec[np.newaxis].T / 2) * dy[np.newaxis].T
             u = (grid - N_vec[np.newaxis].T / 2) * du[np.newaxis].T
         else:
             y = (grid - N_vec / 2) * dy
             u = (grid - N_vec / 2) * du
+        self.y = y
         V, G, phi = np.zeros(N_vec), np.zeros(N_vec), np.zeros(N_vec, dtype=np.complex)
         for k_vec in ConvEuro.iterable_k_vec(N_vec):
             k_vec = np.array(k_vec)
-            cur_y = ConvEuro.k2point(k_vec, y)
-            cur_u = ConvEuro.k2point(k_vec, u)
+            cur_y = y[np.arange(len(y)), k_vec]
+            cur_u = u[np.arange(len(u)), k_vec]
             V[tuple(k_vec)] = self.payoff_func(self.S0_vec * np.exp(cur_y)) # denormalize price
             G[tuple(k_vec)] = ConvEuro.G(k_vec, N_vec)
             phi[tuple(k_vec)] = self.char_func(-cur_u)
         fourier_price = phi * np.fft.ifftn(V * G)
-        price = np.fft.fftn(fourier_price)
-        return abs(price.real[tuple((N_vec/2).astype(int))] * np.exp(-self.ir * self.T))
+        self.price_mat = abs(np.fft.fftn(fourier_price).real * np.exp(-self.ir * self.T))
+        return self.price_mat[tuple((N_vec/2).astype(int))]
+
+    def greeks(self):
+        """
+        return deltas and gammas
+        """
+        assert self.price_mat is not None, "Conv.delta: haven't priced yet"
+        deltas = []
+        gammas = []
+        center_index = (self.N_vec/2).astype(int)
+        for i in range(self.dim):
+            center = self.S0_vec[i]
+            left_index, right_index = np.copy(center_index), np.copy(center_index)
+            left_index[i] -= 1; right_index[i] += 1
+            left, right = np.exp(self.y[i][center_index[i]-1]), np.exp(self.y[i][center_index[i]+1])
+            left *= self.S0_vec[i]; right *= self.S0_vec[i]
+            h1, h2 = center - left, right - center
+            left_price, right_price = self.price_mat[tuple(left_index)], self.price_mat[tuple(right_index)]
+            center_price = self.price_mat[tuple(center_index)]
+            deltas.append(-h2*left_price/(h1*(h1+h2)) + (h2-h1)*center_price/(h1*h2) + h1*right_price/((h1+h2)*h2))
+            gammas.append(2*left_price/(h1*(h1+h2)) - 2*center_price/(h1*h2) + 2*right_price/((h1+h2)*h2))
+        return np.array(deltas), np.array(gammas)
 
     def char_func(self, omega_vec):
-        mu_vec = self.ir - self.dividend_vec - 0.5*self.vol_vec**2
-        img = 1j * np.dot(mu_vec, omega_vec)
+        img = 1j * np.dot(self.mu_vec, omega_vec)
         real = omega_vec @ self.cov_mat @ omega_vec / 2
         cf_val = np.exp(self.T*(img - real))
         return cf_val
@@ -58,31 +80,14 @@ class ConvEuro:
     #     return cf_val
 
     @staticmethod
-    def R(k_vec, N_vec):
-        index = np.logical_or(k_vec == N_vec - 1, k_vec == 0)
-        result = np.ones(len(k_vec))
-        result[index] = 0.5
-        return result
-
-    @staticmethod
-    def Z(k_vec, N_vec):
-        return np.prod(ConvEuro.R(k_vec, N_vec))
-
-    @staticmethod
     def G(k_vec, N_vec):
-        return ConvEuro.Z(k_vec, N_vec) * np.prod((-1)**k_vec)
+        index = np.logical_or(k_vec == N_vec - 1, k_vec == 0)
+        return 0.5**np.sum(index) * np.prod((-1)**k_vec)
     
     @staticmethod
     def iterable_k_vec(N_vec):
         k_range = [range(n) for n in N_vec]
         return list(itertools.product(*k_range))
-    
-    @staticmethod
-    def k2point(k_vec, domain_vec):
-        result = []
-        for i in range(len(domain_vec)):
-            result.append(domain_vec[i][k_vec[i]])
-        return np.array(result)
 
 
 class ConvEuro1d:
@@ -95,7 +100,7 @@ class ConvEuro1d:
         self.vol = vol
         self.dividend = dividend
 
-    def pricing_func(self, n):
+    def price(self, n):
         N = 2**n
         L = self.vol * self.T**0.5 * 20
         dy, dx = L / N, L / N

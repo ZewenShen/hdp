@@ -51,6 +51,16 @@ class Test(unittest.TestCase):
         assert abs(callV3 - 12.586752483453562) < 0.00000000000001
         assert abs(callV3 - real_call)/real_call < 0.0022619
 
+        """
+        Test 2: european 2d spread put
+        """
+        np.random.seed(1)
+        def test_payoff2(l):
+            return max(-l[0] + l[1] + strike, 0)
+        opt = Euro(test_payoff2, random_walk)
+        spreadput2d = opt.priceV2(500000)
+        assert abs(spreadput2d - 10.108531893795202) < 1e-10 
+
     def test_price1d(self):
         np.random.seed(1)
         _, real_put = self.analytical1.european_option_price()
