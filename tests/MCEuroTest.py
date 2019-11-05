@@ -27,6 +27,29 @@ class Test(unittest.TestCase):
         sigma = 0.1
         self.analytical1 = Analytical_Sol(spot_price, strike, time_to_maturity, interest_rate, sigma, dividend_yield=0)
         
+    def test_geometric_avg_4d(self):
+        from scipy.stats.mstats import gmean
+        dim = 4
+        T = 1
+        strike = 40
+        init_price_vec = np.full(4, 40)
+        vol = 0.2
+        ir = 0.06
+        dividend = 0.04
+        corr = 0.25
+        vol_vec = np.full(dim, vol)
+        dividend_vec = np.full(dim, dividend)
+        corr_mat = np.full((dim, dim), corr)
+        np.fill_diagonal(corr_mat, 1)
+        payoff_func = lambda x: np.maximum((gmean(x) - strike), 0)
+        random_walk = GBM(T, 400, init_price_vec, ir, vol_vec, dividend_vec, corr_mat)
+        opt = Euro(payoff_func, random_walk)
+        np.random.seed(1)
+        price = opt.priceV2(100000) # "real": 2.164959740690803
+        assert abs(price - 2.1654452369352635) < 1e-10
+        assert (price - 2.164959740690803)/2.164959740690803 < 0.0002243
+
+
     def test_correlated_pricing(self):
         strike = 50
         asset_num = 2
