@@ -7,15 +7,6 @@ import numpy as np
 
 class Test(unittest.TestCase):
 
-    def testRandZandG(self):
-        k_vec = np.array([0, 1, 2, 3, 4])
-        N_vec = 5 * np.ones(5)
-        assert ConvEuro.G(k_vec, N_vec) == 0.25
-
-    def test_iterable_k_vec(self):
-        N_vec = [3, 3]
-        assert ConvEuro.iterable_k_vec(N_vec) == [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2)]
-
     def test_1dpricing(self):
         K = 110  # option strike
         T = 0.1  # maturity date
@@ -56,7 +47,7 @@ class Test(unittest.TestCase):
         corr_mat[0, 1] = 0.4
         corr_mat[1, 0] = 0.4
         def test_payoff(l):
-            return max(l[0] - l[1] - strike, 0)
+            return np.maximum(l[:, 0] - l[:, 1] - strike, 0)
         euro2d = ConvEuro(test_payoff, init_price_vec, T, ir, vol_vec, dividend_vec, corr_mat)
         price = euro2d.price(np.array([6, 6]))
         assert abs(price - 12.549345239160479) < 1e-10
@@ -71,7 +62,7 @@ class Test(unittest.TestCase):
         Test 2: european 2d spread put
         """
         def test_payoff2(l):
-            return max(-l[0] + l[1] + strike, 0)
+            return np.maximum(-l[:, 0] + l[:, 1] + strike, 0)
         euro2d2 = ConvEuro(test_payoff2, init_price_vec, T, ir, vol_vec, dividend_vec, corr_mat)
         price2 = euro2d2.price(np.array([7, 7]))
         mc_approximation = 10.108531893795202
@@ -90,9 +81,9 @@ class Test(unittest.TestCase):
         corr = 0.25
         euro = Euro(strike, init_price_vec, T, ir, vol, dividend, corr, 1)
         # import profile
-        # profile.run('Euro(40, np.full(4, 40), 1, 0.06, 0.2, 0.04, 0.25, 1).price(5*np.ones(4, dtype=int))')
+        # profile.run('Euro(40, np.full(4, 40), 1, 0.06, 0.2, 0.04, 0.25, 1).price(6*np.ones(4, dtype=int))')
         price = euro.price(5*np.ones(4, dtype=int))
-        print(price)
+        assert abs(price - 2.1443240208017147) < 1e-10
 
 if __name__ == '__main__':
     unittest.main()

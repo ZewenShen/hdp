@@ -18,7 +18,8 @@ class ConvEuro:
         self.price_mat = None
 
     def price(self, n_vec):
-        N_vec = 2**n_vec; self.N_vec = N_vec
+        N_vec = 2**n_vec
+        self.N_vec = N_vec
         L_vec = self.vol_vec * self.T**0.5 * 30
         dy = L_vec / N_vec
         du = 2 * np.pi / L_vec
@@ -31,13 +32,12 @@ class ConvEuro:
             u = (grid - N_vec / 2) * du
         self.y = y
         V, G, phi = np.zeros(N_vec), np.zeros(N_vec), np.zeros(N_vec, dtype=np.complex)
-        for k_vec in ConvEuro.iterable_k_vec(N_vec):
-            k_vec = np.array(k_vec)
-            cur_y = y[np.arange(len(y)), k_vec]
-            cur_u = u[np.arange(len(u)), k_vec]
-            V[tuple(k_vec)] = self.payoff_func(self.S0_vec * np.exp(cur_y)) # denormalize price
-            G[tuple(k_vec)] = ConvEuro.G(k_vec, N_vec)
-            phi[tuple(k_vec)] = self.char_func(-cur_u)
+        k_vecs = ConvEuro.iterable_k_vec(N_vec)
+        ys = y[np.arange(len(y)), k_vecs]
+        us = u[np.arange(len(u)), k_vecs]
+        V = self.payoff_func(self.S0_vec * np.exp(ys)).reshape(N_vec) # denormalize price
+        G = ConvEuro.G(k_vecs, N_vec)
+        phi = self.char_func(-us)
         fourier_price = phi * np.fft.ifftn(V * G)
         self.price_mat = abs(np.fft.fftn(fourier_price).real * np.exp(-self.ir * self.T))
         return self.price_mat[tuple((N_vec/2).astype(int))]
@@ -63,32 +63,21 @@ class ConvEuro:
             gammas.append(2*left_price/(h1*(h1+h2)) - 2*center_price/(h1*h2) + 2*right_price/((h1+h2)*h2))
         return np.array(deltas), np.array(gammas)
 
-    def char_func(self, omega_vec):
-        img = 1j * np.dot(self.mu_vec, omega_vec)
-        real = omega_vec @ self.cov_mat @ omega_vec / 2
+    def char_func(self, us):
+        img = 1j * us @ self.mu_vec
+        real = (us.dot(self.cov_mat)*us).sum(axis=1) / 2
         cf_val = np.exp(self.T*(img - real))
-        return cf_val
-
-    # def char_func(self, omega_vec):
-    #     mu_vec = self.ir - self.dividend_vec - 0.5*self.vol_vec**2
-    #     cf_val1 = 1j * np.dot(mu_vec, omega_vec)
-    #     cf_val2 = 0
-    #     for i in range(self.dim):
-    #         L_sum = np.sum(self.L[i]**2)
-    #         cf_val2 += self.vol_vec[i]**2 * omega_vec[i]**2 * L_sum
-    #     cf_val = np.exp(self.T*(cf_val1 - cf_val2/2))
-    #     return cf_val
+        return cf_val.reshape(self.N_vec)
 
     @staticmethod
     def G(k_vec, N_vec):
         index = np.logical_or(k_vec == N_vec - 1, k_vec == 0)
-        return 0.5**np.sum(index) * np.prod((-1)**k_vec)
+        return (0.5**np.sum(index, axis=1) * np.prod((-1)**k_vec, axis=1)).reshape(N_vec)
     
     @staticmethod
     def iterable_k_vec(N_vec):
         k_range = [range(n) for n in N_vec]
-        return list(itertools.product(*k_range))
-
+        return np.array(np.meshgrid(*k_range)).T.reshape(-1, len(N_vec))
 
 class ConvEuro1d:
 
