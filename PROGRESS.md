@@ -212,3 +212,6 @@ Same idea as the Monte-Carlo method for highly out-of-money options.
 
 # 10.29
 Continue writing the thesis. Finish the writing of n-d case. Found a bug related to FFT and characteristic function in the thesis on Monday.
+
+# 11.5
+Identified and fixed the characteristic function bug and the change of variable bug in the thesis. Successfully implemented the n-d conv method and make it 100x faster by vectorization.
