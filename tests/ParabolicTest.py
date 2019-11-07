@@ -1,7 +1,7 @@
 import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(__file__))+"/../src")
 from blackscholes.pde.Parabolic import Solver1d, Coef2d, Solver2d
-from blackscholes.pde.Euro import Euro1d
+from blackscholes.pde.Euro import Euro1d, GeometricAvg
 from blackscholes.utils.Analytical import Analytical_Sol
 from utils.Domain import Domain1d, Domain2d
 from blackscholes.utils.Type import CallPutType
@@ -22,6 +22,21 @@ class Test(unittest.TestCase):
         _, real_put = analytical.european_option_price()
         assert abs(approx_put-0.030050214069580493) < 0.00000000000001
         assert abs(approx_put-real_put)/real_put < 0.00054
+
+    def test_geometric_avg(self):
+        dim = 4
+        T = 1
+        domain = Domain1d(0, 100, T)
+        strike = 40
+        init_price_vec = np.full(4, 40)
+        vol = 0.2
+        ir = 0.06
+        dividend = 0.04
+        corr = 0.25
+        solver = GeometricAvg(dim, domain, vol, ir, dividend, corr, strike, CallPutType.CALL)
+        solver.solve(800, 400)
+        approx = solver.evaluate(40, T)
+        print(approx)
 
     def dtest_Solver2d(self):
         ic = lambda x, y, t: np.zeros([len(x), len(y)])
