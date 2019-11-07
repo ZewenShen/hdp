@@ -17,7 +17,7 @@ class Euro:
     def price(self, path_num=1000):
         self.simulation_result = self.random_walk.simulate(path_num)
         last_price = [x[:, -1] for x in self.simulation_result]
-        payoff = list(map(self.payoff_func, last_price))
+        payoff = self.payoff_func( last_price)
         return np.mean(payoff) * np.exp(-self.random_walk.ir * self.random_walk.T)
 
     def priceV2(self, path_num=10000):
@@ -25,7 +25,7 @@ class Euro:
         Stock prices approximated by the analytical solution to the SDE.
         """
         self.simulation_result = self.random_walk.simulateV2_T(path_num)
-        payoff = list(map(self.payoff_func, self.simulation_result))
+        payoff = self.payoff_func(self.simulation_result)
         return np.mean(payoff) * np.exp(-self.random_walk.ir * self.random_walk.T)
 
     def priceV3(self, path_num=10000):
@@ -34,7 +34,7 @@ class Euro:
         """
         self.simulation_result = self.random_walk.simulateV2(path_num)
         last_price = [x[:, -1] for x in self.simulation_result]
-        payoff = list(map(self.payoff_func, last_price))
+        payoff = self.payoff_func(last_price)
         return np.mean(payoff) * np.exp(-self.random_walk.ir * self.random_walk.T)
     
     def price1d_control_variates(self, path_num=1000):
