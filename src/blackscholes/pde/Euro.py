@@ -15,12 +15,3 @@ class Euro1d(Solver1d):
         domain.ic = lambda S, t: np.maximum(cp_type*(S - strike), 0)
         domain.bc = lambda S, t: strike*np.exp(-ir*t) if abs(S) < 7/3-4/3-1 else 0
         super().__init__(p, q, r, f, domain)
-
-class GeometricAvg(Euro1d):
-    def __init__(self, dim, domain, vol, ir, dividend, corr, strike, cp_type):
-        """
-        cp_type (call/put type): 1 if call, -1 if put
-        """
-        sigma = ((1 + (dim - 1) * corr) / dim)**0.5 * vol
-        mu = ir - dividend + (sigma**2 - vol**2) / 2
-        super().__init__(domain, sigma, mu, 0, strike, cp_type)
