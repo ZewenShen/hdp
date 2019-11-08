@@ -3,10 +3,36 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__))+"/../src")
 from blackscholes.utils.GBM import GBM
 from blackscholes.utils.Analytical import Analytical_Sol
 from blackscholes.mc.Euro import Euro
+from utils.Experiment import MCEuroExperiment
+import utils.Pickle as hdpPickle
 import unittest
 import numpy as np
 
 class Test(unittest.TestCase):
+
+    def conv_rate_4dGA(self):
+        from scipy.stats.mstats import gmean
+        dim = 4
+        T = 1
+        strike = 40
+        init_price_vec = np.full(4, 40)
+        vol = 0.2
+        ir = 0.06
+        dividend = 0.04
+        corr = 0.25
+        vol_vec = np.full(dim, vol)
+        dividend_vec = np.full(dim, dividend)
+        corr_mat = np.full((dim, dim), corr)
+        np.fill_diagonal(corr_mat, 1)
+        payoff_func = lambda x: np.maximum((gmean(x, axis=1) - strike), np.zeros(len(x)))
+        random_walk = GBM(T, 400, init_price_vec, ir, vol_vec, dividend_vec, corr_mat)
+        opt = Euro(payoff_func, random_walk)
+        analy = 2.165238512096621
+        np.random.seed(1)
+        result = MCEuroExperiment(analy, 14, 21, opt)
+        hdpPickle.dump(result, 'MCEuro_4dGA.pickle')
+        print(result)
+
     def setUp(self):
         strike = 100
 
@@ -51,7 +77,7 @@ class Test(unittest.TestCase):
         assert (price - 2.164959740690803)/2.164959740690803 < 0.0002243
 
 
-    def dtest_correlated_pricing(self):
+    def test_correlated_pricing(self):
         strike = 50
         asset_num = 2
         init_price_vec = np.array([110, 60])
@@ -63,7 +89,7 @@ class Test(unittest.TestCase):
         corr_mat[1, 0] = 0.4
         random_walk = GBM(182/365, 400, init_price_vec, ir, vol_vec, dividend_vec, corr_mat)
         def test_payoff(l):
-            return max(l[0] - l[1] - strike, 0)
+            return np.maximum(l[:, 0] - l[:, 1] - strike, np.zeros(len(l)))
         opt = Euro(test_payoff, random_walk)
         np.random.seed(1)
         callV2 = opt.priceV2(1000000)
@@ -80,7 +106,7 @@ class Test(unittest.TestCase):
         """
         np.random.seed(1)
         def test_payoff2(l):
-            return max(-l[0] + l[1] + strike, 0)
+            return np.maximum(-l[:, 0] + l[:, 1] + strike, np.zeros(len(l)))
         opt = Euro(test_payoff2, random_walk)
         spreadput2d = opt.priceV2(500000)
         assert abs(spreadput2d - 10.108531893795202) < 1e-10 
@@ -96,7 +122,6 @@ class Test(unittest.TestCase):
         np.random.seed(1)
         _, real_put = self.analytical1.european_option_price()
         approx_put = self.opt1.priceV2(300000)
-        print(approx_put)
         assert abs(approx_put - 2.61594175018011) < 0.00000000000001
         assert abs(approx_put-real_put)/real_put < 0.003994
     
@@ -118,8 +143,8 @@ class Test(unittest.TestCase):
         time_to_maturity = 0.25
         random_walk = GBM(time_to_maturity, 100, init_price_vec, ir, vol_vec, dividend_vec, corr_mat)
         analytical2 = Analytical_Sol(init_price_vec[0], strike, time_to_maturity, ir, vol_vec[0], dividend_yield=0)
-        def test_payoff(*l):
-            return max(np.sum(l)-strike, 0)
+        def test_payoff(l):
+            return np.maximum(np.sum(l, axis=1)-strike, np.zeros(len(l)))
         opt2 = Euro(test_payoff, random_walk)
 
         real_call, _ = analytical2.european_option_price()
@@ -142,8 +167,8 @@ class Test(unittest.TestCase):
         time_to_maturity = 1
         random_walk = GBM(time_to_maturity, 100, init_price_vec, ir, vol_vec, dividend_vec, corr_mat)
         analytical2 = Analytical_Sol(init_price_vec[0], strike, time_to_maturity, ir, vol_vec[0], dividend_yield=0)
-        def test_payoff(*l):
-            return max(np.sum(l)-strike, 0)
+        def test_payoff(l):
+            return np.maximum(np.sum(l, axis=1)-strike, np.zeros(len(l)))
         test_payoff.strike = strike
 
         opt2 = Euro(test_payoff, random_walk)

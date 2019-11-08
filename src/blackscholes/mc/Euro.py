@@ -42,7 +42,7 @@ class Euro:
         self.simulation_result = self.random_walk.simulate(path_num)
         last_price = [x[:, -1] for x in self.simulation_result]
         X = np.array(last_price).ravel()
-        Y = np.array([self.payoff_func(p) for p in last_price])*np.exp(-self.random_walk.ir*self.random_walk.T)
+        Y = self.payoff_func(last_price) * np.exp(-self.random_walk.ir*self.random_walk.T)
         meanX, meanY = np.mean(X), np.mean(Y)
         b_hat = np.sum(np.multiply(X-meanX, Y-meanY))/np.sum(np.power(X-meanX, 2))
         return np.mean(Y-b_hat*(last_price - np.exp(self.random_walk.ir*self.random_walk.T)*self.random_walk.init_price_vec[0]))
@@ -50,7 +50,7 @@ class Euro:
     def price_antithetic_variates(self, path_num=1000):
         self.simulation_result = self.random_walk.antithetic_simulate(path_num)
         last_price = [x[:, -1] for x in self.simulation_result]
-        payoff = list(map(self.payoff_func, last_price))
+        payoff = self.payoff_func(last_price)
         return np.mean(payoff) * np.exp(-self.random_walk.ir * self.random_walk.T)
 
     def price_importance_sampling(self, path_num):
@@ -62,7 +62,7 @@ class Euro:
         norm_mean_new = np.log(strike/self.random_walk.init_price_vec) - self.random_walk.T*self.random_walk.vol_vec**2/2
         scale = self.random_walk.vol_vec * sqrt(self.random_walk.T)
         density_ratio = norm.pdf(Zs, loc=norm_mean_old, scale=scale)/norm.pdf(Zs, loc=norm_mean_new, scale=scale)
-        payoff = np.array([self.payoff_func(Y) for Y in self.simulation_result])
+        payoff = self.payoff_func(self.simulation_result)
         return np.mean(np.multiply(payoff, density_ratio.T)) * np.exp(-self.random_walk.ir*self.random_walk.T)
 
 
