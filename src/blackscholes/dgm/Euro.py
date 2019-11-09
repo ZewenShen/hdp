@@ -7,6 +7,24 @@ import utils.Pickle as pickle
 import tensorflow as tf
 import numpy as np
 
+
+class Euro:
+
+    def __init__(self, payoff_func, domain, vol_vec, ir, dividend_vec, corr_mat, sampler=None):
+        """
+        cp_type (call/put type): 1 if call, -1 if put
+        """
+        self.payoff_func = payoff_func
+        self.domain = domain
+        self.vol_vec = vol_vec
+        self.ir = ir
+        self.dividend_vec = dividend_vec
+        self.corr_mat = corr_mat
+        self.sampler = sampler
+
+    def run(self,  n_samples, steps_per_sample, n_layers=3, layer_width=50, n_interior=1000, n_boundary=100, n_terminal=100, saved_name=None):
+        pass
+    
 class Euro1d:
 
     def __init__(self, domain, vol, ir, dividend, strike, cp_type, sampler=None):

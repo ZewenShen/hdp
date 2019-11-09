@@ -75,3 +75,39 @@ class Domain2d(Domain1d):
     def get_discretization_size(self, nx, ny, nt):
         hx, hy, ht = (self.b-self.a)/nx, (self.d-self.c)/ny, self.T/nt
         return hx, hy, ht
+
+class SamplerNd:
+    def __init__(self, domainNd):
+        """
+        S_multiplier: Sample from a domain larger than the preset domain
+        """
+        self.domain = domainNd
+    
+    def run(self, n_interior, n_terminal):
+        # Sampler #1: domain interior
+        dim, T = self.domain.dim, self.domain.T
+        lower_bound, upper_bound = self.domain.lower_bound, self.domain.upper_bound
+        t_interior = np.random.uniform(low=0, high=T-1e-10, size=[n_interior, dim])
+        S_interior = np.random.uniform(low=lower_bound, high=upper_bound, size=[n_interior, dim])
+
+        # Sampler #2: spatial boundary
+        # t_boundary = np.random.uniform(low=0, high=T-1e-10, size=[n_boundary, 1])
+        # S_boundary = np.random.choice([a/S_multiplier, b*S_multiplier], n_boundary).reshape(n_boundary, 1)
+        
+        # Sampler #3: initial/terminal condition
+        t_terminal = T * np.ones((n_terminal, 1))
+        S_terminal = np.random.uniform(low=lower_bound, high=upper_bound, size=[n_terminal, dim])
+        
+        return S_interior, t_interior, S_terminal, t_terminal
+
+class DomainNd:
+
+    def __init__(self, range_vec, T):
+        self.dim = len(range_vec)
+        self.range_vec = range_vec
+        self.lower_bound = range_vec.T[0]
+        self.upper_bound = range_vec.T[1]
+        self.T = T
+    
+    def get_discretization_size(self, n_vec, nt):
+        return (self.range_vec[:, 1] - self.range_vec[:, 0]) / n_vec, self.T / nt

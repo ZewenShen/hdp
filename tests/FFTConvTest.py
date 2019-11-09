@@ -21,7 +21,7 @@ class Test(unittest.TestCase):
         corr = 0.25
         euro = Euro(strike, init_price_vec, T, ir, vol, dividend, corr, 1)
         analy = 2.165238512096621
-        result = FFTConvExperiment(analy, 3, 7, euro)
+        result = FFTConvExperiment(analy, 3, 8, euro)
         hdpPickle.dump(result, 'FFTconv_rate_4dGA.pickle')
         print(result)
 
