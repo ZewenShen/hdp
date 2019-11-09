@@ -31,7 +31,6 @@ class ConvEuro:
             y = (grid - N_vec / 2) * dy
             u = (grid - N_vec / 2) * du
         self.y = y
-        V, G, phi = np.zeros(N_vec), np.zeros(N_vec), np.zeros(N_vec, dtype=np.complex)
         k_vecs = ConvEuro.iterable_k_vec(N_vec)
         ys = y[np.arange(len(y)), k_vecs]
         us = u[np.arange(len(u)), k_vecs]
