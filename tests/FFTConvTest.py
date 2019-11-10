@@ -2,28 +2,11 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(__file__))+"/../src")
 from blackscholes.fft.Conv import ConvEuro, ConvEuro1d
 from blackscholes.fft.GeometricAvg import Euro
-from utils.Experiment import FFTConvExperiment
-import utils.Pickle as hdpPickle
 
 import unittest
 import numpy as np
-import pickle
 
 class Test(unittest.TestCase):
-
-    def conv_rate_4dGA(self):
-        T = 1
-        strike = 40
-        init_price_vec = np.full(4, 40)
-        vol = 0.2
-        ir = 0.06
-        dividend = 0.04
-        corr = 0.25
-        euro = Euro(strike, init_price_vec, T, ir, vol, dividend, corr, 1)
-        analy = 2.165238512096621
-        result = FFTConvExperiment(analy, 3, 8, euro)
-        hdpPickle.dump(result, 'FFTconv_rate_4dGA.pickle')
-        print(result)
 
     def test_1dpricing(self):
         K = 110  # option strike

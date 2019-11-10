@@ -3,35 +3,10 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__))+"/../src")
 from blackscholes.utils.GBM import GBM
 from blackscholes.utils.Analytical import Analytical_Sol
 from blackscholes.mc.Euro import Euro
-from utils.Experiment import MCEuroExperiment
-import utils.Pickle as hdpPickle
 import unittest
 import numpy as np
 
 class Test(unittest.TestCase):
-
-    def conv_rate_4dGA(self):
-        from scipy.stats.mstats import gmean
-        dim = 4
-        T = 1
-        strike = 40
-        init_price_vec = np.full(4, 40)
-        vol = 0.2
-        ir = 0.06
-        dividend = 0.04
-        corr = 0.25
-        vol_vec = np.full(dim, vol)
-        dividend_vec = np.full(dim, dividend)
-        corr_mat = np.full((dim, dim), corr)
-        np.fill_diagonal(corr_mat, 1)
-        payoff_func = lambda x: np.maximum((gmean(x, axis=1) - strike), np.zeros(len(x)))
-        random_walk = GBM(T, 400, init_price_vec, ir, vol_vec, dividend_vec, corr_mat)
-        opt = Euro(payoff_func, random_walk)
-        analy = 2.165238512096621
-        np.random.seed(1)
-        result = MCEuroExperiment(analy, 14, 21, opt)
-        hdpPickle.dump(result, 'MCEuro_4dGA.pickle')
-        print(result)
 
     def setUp(self):
         strike = 100
