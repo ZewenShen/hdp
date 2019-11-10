@@ -17,10 +17,10 @@ class ConvEuro:
         self.cov_mat = (self.vol_vec[np.newaxis].T @ self.vol_vec[np.newaxis]) * corr_mat
         self.price_mat = None
 
-    def price(self, n_vec):
+    def price(self, n_vec, L_multiplier=30):
         N_vec = 2**n_vec
         self.N_vec = N_vec
-        L_vec = self.vol_vec * self.T**0.5 * 30
+        L_vec = self.vol_vec * self.T**0.5 * L_multiplier
         dy = L_vec / N_vec
         du = 2 * np.pi / L_vec
         grid = np.array([np.arange(N) for N in N_vec])

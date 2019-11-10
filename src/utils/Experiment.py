@@ -35,7 +35,7 @@ class ExperimentResult:
                     self.N[i], self.relative_errors[i], self.orders[i-2], self.times[i])
         return result
 
-def FFTConvExperiment(analytical_sol, n_start, n_end, FFT_Euro):
+def FFTConvExperiment(analytical_sol, n_start, n_end, FFT_Euro, L_multiplier=30):
     results = []
     errors = []
     times = []
@@ -43,7 +43,7 @@ def FFTConvExperiment(analytical_sol, n_start, n_end, FFT_Euro):
     N = 2**np.array(r)
     for i in r:
         start = timer()
-        result = FFT_Euro.price(i * np.ones(FFT_Euro.solver.dim, dtype=int))
+        result = FFT_Euro.price(i * np.ones(FFT_Euro.solver.dim, dtype=int), L_multiplier)
         end = timer()
         results.append(result)
         errors.append(abs(result - analytical_sol))

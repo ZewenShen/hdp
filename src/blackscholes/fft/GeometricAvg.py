@@ -16,8 +16,8 @@ class Euro:
         self.solver = ConvEuro(payoff_func, S0_vec, T, ir, vol_vec, dividend_vec, corr_mat)
         self.price_mat = None
     
-    def price(self, n_vec):
-        self.price_mat = self.solver.price(n_vec)
+    def price(self, n_vec, L_multiplier=30):
+        self.price_mat = self.solver.price(n_vec, L_multiplier)
         return self.price_mat
 
     def greeks(self):
