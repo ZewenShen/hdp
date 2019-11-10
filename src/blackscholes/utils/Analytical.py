@@ -1,8 +1,3 @@
-"""
-@author: Abhirup Mishra
-@Description: The class contains the methods for pricing options using Black-Scholes Formula
-"""
-
 from math import sqrt, pi
 import scipy as sp
 from scipy.special import erf
@@ -29,6 +24,10 @@ class GeometricAvg:
         return np.exp(-self.ir * self.T) * (F * norm.cdf(d1) - self.strike * norm.cdf(d2))
 
 
+"""
+@author: Abhirup Mishra
+@Description: The class contains the methods for pricing options using Black-Scholes Formula
+"""
 class Analytical_Sol:
     """
     Analytical solution to 1D Black-Scholes Formula
