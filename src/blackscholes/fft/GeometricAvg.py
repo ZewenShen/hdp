@@ -4,7 +4,7 @@ from blackscholes.fft.Conv import ConvEuro
 import numpy as np
 from scipy.stats.mstats import gmean
 
-class Euro:
+class Euro(ConvEuro):
 
     def __init__(self, strike, S0_vec, T, ir, vol, dividend, corr, cp_type):
         dim = len(S0_vec)
@@ -13,12 +13,4 @@ class Euro:
         corr_mat = np.full((dim, dim), corr)
         np.fill_diagonal(corr_mat, 1)
         payoff_func = lambda x: np.maximum(cp_type*(gmean(x, axis=1) - strike), 0)
-        self.solver = ConvEuro(payoff_func, S0_vec, T, ir, vol_vec, dividend_vec, corr_mat)
-        self.price_mat = None
-    
-    def price(self, n_vec, L_multiplier=30):
-        self.price_mat = self.solver.price(n_vec, L_multiplier)
-        return self.price_mat
-
-    def greeks(self):
-        return self.solver.greeks()
+        super().__init__(payoff_func, S0_vec, T, ir, vol_vec, dividend_vec, corr_mat)

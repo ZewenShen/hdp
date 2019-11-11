@@ -5,15 +5,22 @@ from scipy.stats import norm
 import numpy as np
 
 class GeometricAvg:
-    def __init__(self, spot, strike, T, ir, vol_vec, dividend, corr_mat):
+    def __init__(self, dim, spot, strike, T, ir, vol_vec, dividend, corr_mat):
         self.spot = spot
         self.strike = strike
         self.T = T
         self.ir = ir
-        self.vol_vec = vol_vec
-        self.dim = len(vol_vec)
+        if isinstance(vol_vec, float):
+            self.vol_vec = vol_vec * np.ones(dim)
+        else:
+            self.vol_vec = vol_vec
+        self.dim = dim
         self.dividend = dividend
-        self.corr_mat = corr_mat
+        if isinstance(corr_mat, float):
+            self.corr_mat = np.full((dim, dim), corr_mat)
+            np.fill_diagonal(self.corr_mat, 1)
+        else:
+            self.corr_mat = corr_mat
 
     def european_option_price(self):
         sigma = (self.vol_vec @ self.corr_mat @ self.vol_vec)**0.5 / self.dim
