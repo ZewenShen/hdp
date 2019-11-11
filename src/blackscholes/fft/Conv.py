@@ -1,6 +1,5 @@
 import numpy as np
 import itertools
-
 # Convolution method for Black Scholes model
 
 class ConvEuro:
@@ -33,6 +32,7 @@ class ConvEuro:
         self.y = y
         k_vecs = ConvEuro.iterable_k_vec(N_vec)
         ys = y[np.arange(len(y)), k_vecs]
+        self.points = self.S0_vec * np.exp(ys)
         us = u[np.arange(len(u)), k_vecs]
         V = self.payoff_func(self.S0_vec * np.exp(ys)).reshape(N_vec) # denormalize price
         G = ConvEuro.G(k_vecs, N_vec)
@@ -40,6 +40,9 @@ class ConvEuro:
         fourier_price = phi * np.fft.ifftn(V * G)
         self.price_mat = abs(np.fft.fftn(fourier_price).real * np.exp(-self.ir * self.T))
         return self.price_mat[tuple((N_vec/2).astype(int))]
+
+    def get_all_price(self):
+        return self.points, self.price_mat.flatten()
 
     def greeks(self):
         """
