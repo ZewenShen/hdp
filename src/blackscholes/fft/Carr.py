@@ -33,7 +33,9 @@ class CarrEuroCall1d:
         FFTfunc = Psi_vec * np.exp(-1j * beta * v_vec) * simpson(N, int_grid_size)
         FFTinv = np.fft.fft(FFTfunc).real
         CT = np.exp(-self.alpha*k_vec) * FFTinv / np.pi
-        return interpolate.interp1d(np.exp(k_vec), CT, 'cubic')
+        self.k_vec = np.exp(k_vec)
+        self.price = CT
+        return interpolate.interp1d(self.k_vec, CT, 'cubic')
 
 def simpson(N, int_grid_size):
     delta = np.zeros(N, dtype=np.float)
