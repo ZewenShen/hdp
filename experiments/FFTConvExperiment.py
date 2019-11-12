@@ -4,7 +4,7 @@ from blackscholes.fft.Conv import ConvEuro
 from blackscholes.fft.GeometricAvg import Euro
 from utils.Experiment import FFTConvExperiment
 import utils.Pickle as hdpPickle
-from blackscholes.utils.Analytical import GeometricAvg as AnalyticalGA
+from blackscholes.utils.Analytical import GeometricAvg as AnalyticalGA, Analytical_Sol as Ana1d
 
 import unittest
 import numpy as np
@@ -12,6 +12,32 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 class Test(unittest.TestCase):
+
+    def test_1d_boundary_sol(self):
+        T = 1
+        spot = 50
+        strike = 40
+        ir = 0.1
+        vol = 0.25
+        call, _ = Ana1d(spot, strike, T, ir, vol).european_option_price()
+        payoff_func = lambda x: np.maximum(x - strike, 0)
+        conv = ConvEuro(payoff_func, spot*np.ones(1), T, ir, vol*np.ones(1), np.zeros(1), np.eye(1))
+        result = FFTConvExperiment(call[0], 18, 19, conv, 10)
+        print(result)
+        grid, pri = conv.get_all_price()
+        call, _ = Ana1d(grid.flatten(), strike, T, ir, vol).european_option_price()
+        errors = pri - call
+        plt.plot(grid.flatten(), call, marker='.')
+        plt.plot(grid.flatten(), pri, marker='.')
+        # plt.plot(grid.flatten(), np.abs(conv.fp), marker='.')
+        # plt.plot(grid.flatten(), np.angle(conv.fp), marker='.')
+
+        # plt.plot(grid.flatten(), conv.ivg, marker='.')
+        # plt.plot(grid.flatten(), conv.vg, marker='.')
+        plt.plot(spot, 0, marker='o')
+        plt.plot(strike, 0, marker='8')
+        plt.show()
+        
 
     def test_all_sol_2d(self):
         T = 1
@@ -39,6 +65,34 @@ class Test(unittest.TestCase):
         ax.set_xlabel('Spot Price of Asset 1')
         ax.set_ylabel('Spot Price of Asset 2')
         ax.axis('equal')
+        plt.show()
+
+    def test_all_sol_2d_3dplot(self):
+        T = 1
+        dim = 2
+        strike = 10
+        init_price_vec = np.full(2, 50)
+        vol = 0.2
+        ir = 0.06
+        dividend = 0.04
+        corr = 0.25
+        euro = Euro(strike, init_price_vec, T, ir, vol, dividend, corr, 1)
+        analy = AnalyticalGA(dim, init_price_vec, strike, T, ir, vol, dividend, corr).european_option_price()
+        result = FFTConvExperiment(analy, 6, 7, euro, 10)
+        print(result)
+        grid, pri = euro.get_all_price()
+        errors = []
+        for i in range(len(pri)):
+            ana = AnalyticalGA(dim, grid[i], strike, T, ir, vol, dividend, corr).european_option_price()
+            errors.append(pri[i] - ana)
+        # print(errors)
+        fig = plt.figure(figsize=(5, 5))
+        ax = Axes3D(fig)
+        x, y, errors = grid[:, 0], grid[:, 1], np.array(errors)
+        ax.scatter(x[::3], y[::3], errors[::3], alpha=0.3, marker='.')
+        ax.set_xlabel('Spot Price of Asset 1')
+        ax.set_ylabel('Spot Price of Asset 2')
+        ax.set_title('approximation - real')
         plt.show()
 
     def test_conv_rate_4dGA(self):

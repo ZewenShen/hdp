@@ -20,8 +20,7 @@ class ExperimentResult:
     def __str__(self):
         result = "N    rel_err    orders    times\n"
         if self.errors is not None:
-            result += "{:d}    {:.1e}    NA    {:.1f}\n".format(\
-                    self.N[0], self.relative_errors[0], self.times[0])
+            result += "{:d}    {:.1e}    NA    {:.1f}\n".format(self.N[0], self.relative_errors[0], self.times[0])
             for i in range(1, len(self.N)):
                 result += "{:d}    {:.1e}    {:.1f}    {:.1f}\n".format(\
                     self.N[i], self.relative_errors[i], self.orders[i-1], self.times[i])

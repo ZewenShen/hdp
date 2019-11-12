@@ -1,5 +1,6 @@
 import numpy as np
 import itertools
+from scipy.interpolate import interpn
 # Convolution method for Black Scholes model
 
 class ConvEuro:
@@ -36,8 +37,11 @@ class ConvEuro:
         us = u[np.arange(len(u)), k_vecs]
         V = self.payoff_func(self.S0_vec * np.exp(ys)).reshape(N_vec) # denormalize price
         G = ConvEuro.G(k_vecs, N_vec)
+        # self.vg = V*G
+        # self.ivg = np.fft.ifftn(V*G)
         phi = self.char_func(-us)
         fourier_price = phi * np.fft.ifftn(V * G)
+        # self.fp = fourier_price
         self.price_mat = abs(np.fft.fftn(fourier_price).real * np.exp(-self.ir * self.T))
         return self.price_mat[tuple((N_vec/2).astype(int))]
 
