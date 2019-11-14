@@ -215,3 +215,6 @@ Continue writing the thesis. Finish the writing of n-d case. Found a bug related
 
 # 11.5
 Identified and fixed the characteristic function bug and the change of variable bug in the thesis. Successfully implemented the n-d conv method and make it 100x faster by vectorization.
+
+# 11.12
+Add medium dimensional option pricing benchmark (geometric avg payoff). Add experiment module to simplify numerical experiments. Investigate in the reason why Conv method only gives solutions on domain close to the spot price: circular convolution. Give the analytical form of the greeks using Conv method.
