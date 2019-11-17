@@ -23,7 +23,7 @@ class Euro:
         self.cov_mat = (self.vol_vec[np.newaxis].T @ self.vol_vec[np.newaxis]) * corr_mat
         self.sampler = sampler if sampler is not None else SamplerNd(domain)
 
-    def run(self,  n_samples, steps_per_sample, n_layers=3, layer_width=50, n_interior=1000, n_boundary=100, n_terminal=100, saved_name=None):
+    def run(self,  n_samples, steps_per_sample, n_layers=3, layer_width=50, n_interior=1000, n_terminal=100, saved_name=None):
         model = DGMNet(n_layers, layer_width, input_dim=self.dim)
         self.model = model
         S_interior_tnsr = tf.placeholder(tf.float32, [None, self.dim])
@@ -34,14 +34,17 @@ class Euro:
             S_terminal_tnsr, t_terminal_tnsr)
         loss_tnsr = L1_tnsr + L3_tnsr
 
-        optimizer = tf.train.AdamOptimizer().minimize(loss_tnsr)
+        global_step = tf.Variable(0, trainable=False)
+        boundaries = [5000, 10000, 20000, 30000, 40000, 45000]
+        values = [1e-4, 5e-5, 1e-5, 5e-6, 1e-6, 5e-7, 1e-7]
+        learning_rate = tf.train.piecewise_constant(global_step, boundaries, values)
+        optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss_tnsr)
 
         self.loss_vec, self.L1_vec, self.L3_vec = [], [], []
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
             for i in range(n_samples):
-                S_interior, t_interior, S_terminal, t_terminal = \
-                    self.sampler.run(n_interior, n_terminal)
+                S_interior, t_interior, S_terminal, t_terminal = self.sampler.run(n_interior, n_terminal)
                 for _ in range(steps_per_sample):
                     loss, L1, L3, _ = sess.run([loss_tnsr, L1_tnsr, L3_tnsr, optimizer],\
                         feed_dict={S_interior_tnsr: S_interior, t_interior_tnsr: t_interior,\
@@ -72,19 +75,18 @@ class Euro:
         sec_ords = tf.map_fn(lambda x: tf.reduce_sum(tf.tensordot(S_interior, x, 1) * S_interior, axis=1) / 2,\
                     cov_Vss)
         sec_ord = tf.reduce_sum(sec_ords, axis=1)
-        first_ord = tf.reduce_sum(tf.multiply(V_s, S_interior), axis=1)
-        diff_V = V_t + sec_ord + tf.multiply(self.ir - self.dividend_vec, first_ord) - self.ir * V
+        first_ord = tf.reduce_sum(tf.multiply(tf.multiply(V_s, S_interior), self.ir - self.dividend_vec), axis=1)
+        diff_V = V_t + sec_ord + first_ord - self.ir * V
 
         # compute average L2-norm of differential operator
         L1 = tf.reduce_mean(tf.square(diff_V))
         
         
         # Loss term #3: initial/terminal condition
-        target_payoff = tf.nn.relu(self.payoff_func(S_terminal))
+        target_payoff = self.payoff_func(S_terminal)
         fitted_payoff = model(S_terminal, t_terminal)
         
         L3 = tf.reduce_mean(tf.square(fitted_payoff - target_payoff))
-
         return L1, L3
 
 class Euro1d:

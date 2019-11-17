@@ -87,7 +87,7 @@ class SamplerNd:
         # Sampler #1: domain interior
         dim, T = self.domain.dim, self.domain.T
         lower_bound, upper_bound = self.domain.lower_bound, self.domain.upper_bound
-        t_interior = np.random.uniform(low=0, high=T-1e-10, size=[n_interior, dim])
+        t_interior = np.random.uniform(low=0, high=T-1e-10, size=[n_interior, 1])
         S_interior = np.random.uniform(low=lower_bound, high=upper_bound, size=[n_interior, dim])
 
         # Sampler #2: spatial boundary
