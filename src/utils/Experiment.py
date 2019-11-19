@@ -64,3 +64,18 @@ def MCEuroExperiment(analytical_sol, n_start, n_end, MC_Euro):
         times.append(end - start)
     return ExperimentResult(N, results, times, errors, analytical_sol)
 
+def MCEuroExperiment_Sobol(analytical_sol, n_start, n_end, MC_Euro):
+    results = []
+    errors = []
+    times = []
+    r = range(n_start, n_end)
+    N = 2**np.array(r)
+    for n in N:
+        start = timer()
+        result = MC_Euro.priceV4(n)
+        end = timer()
+        results.append(result)
+        errors.append(abs(results[-1] - analytical_sol))
+        times.append(end - start)
+    return ExperimentResult(N, results, times, errors, analytical_sol)
+

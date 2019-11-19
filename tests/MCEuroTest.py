@@ -28,7 +28,13 @@ class Test(unittest.TestCase):
         interest_rate = 0.03
         sigma = 0.1
         self.analytical1 = Analytical_Sol(spot_price, strike, time_to_maturity, interest_rate, sigma, dividend_yield=0)
-        
+    
+    def test_sobol(self):
+        _, real_put = self.analytical1.european_option_price()
+        approx_put = self.opt1.priceV4(10000)
+        assert abs(approx_put - 2.6263259615779786) < 0.00000000000001
+        assert abs(approx_put-real_put)/real_put < 3.98046746e-05
+
     def test_geometric_avg_4d(self):
         from scipy.stats.mstats import gmean
         dim = 4
@@ -50,7 +56,6 @@ class Test(unittest.TestCase):
         price = opt.priceV2(100000) # "real": 2.164959740690803
         assert abs(price - 2.1654452369352635) < 1e-10
         assert (price - 2.164959740690803)/2.164959740690803 < 0.0002243
-
 
     def test_correlated_pricing(self):
         strike = 50
