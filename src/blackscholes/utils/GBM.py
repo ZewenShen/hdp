@@ -1,3 +1,6 @@
+import sys, os
+sys.path.append(os.path.dirname(os.path.abspath(__file__))+"/../..")
+from utils.Sobol import i4_sobol_generate_std_normal
 import numpy as np
 from math import sqrt
 import random
@@ -61,6 +64,23 @@ class GBM:
         L = np.linalg.cholesky(self.corr_mat)
         for _ in range(M):
             dW = L.dot(np.random.normal(size=self.asset_num))*sqrt(self.T)
+            rand_term = np.multiply(self.vol_vec, dW)
+            sim = np.multiply(self.init_price_vec, np.exp((drift_vec-self.vol_vec**2/2)*self.T + rand_term))
+            simulations.append(sim)
+        return np.array(simulations)
+    
+    def simulateV4_T(self, M):
+        """
+        Vanilla simulation using the lognormal distribution.
+        Only returns the stock price at time T.
+        RNG: the sobol sequence
+        """
+        simulations = []
+        drift_vec = self.ir - self.dividend_vec
+        L = np.linalg.cholesky(self.corr_mat)
+        sobol_seq = i4_sobol_generate_std_normal(self.asset_num, M)
+        for i in range(M):
+            dW = L.dot(sobol_seq[i])*sqrt(self.T)
             rand_term = np.multiply(self.vol_vec, dW)
             sim = np.multiply(self.init_price_vec, np.exp((drift_vec-self.vol_vec**2/2)*self.T + rand_term))
             simulations.append(sim)
