@@ -218,3 +218,6 @@ Identified and fixed the characteristic function bug and the change of variable 
 
 # 11.12
 Add medium dimensional option pricing benchmark (geometric avg payoff). Add experiment module to simplify numerical experiments. Investigate in the reason why Conv method only gives solutions on domain close to the spot price: circular convolution. Give the analytical form of the greeks using Conv method.
+
+# 11.19
+Investigate more closely in the circular convolution. Understand Tensorflow in more depth and implemented the deep Galerkin method N-d European case. Wrote the first two chapters in the thesis: 1. Introduction and 2. Two Frameworks for Option Pricing. Experimented with N-d MC method using sobol sequence. Noticed that the N-d antithetic method may also be useful.
