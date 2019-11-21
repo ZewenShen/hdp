@@ -2,7 +2,7 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(__file__))+"/../src")
 from blackscholes.utils.GBM import GBM
 from blackscholes.mc.Euro import Euro
-from utils.Experiment import MCEuroExperiment, MCEuroExperiment_Sobol
+from utils.Experiment import MCEuroExperiment
 import utils.Pickle as hdpPickle
 import unittest
 import numpy as np
@@ -28,7 +28,7 @@ class Test(unittest.TestCase):
         opt = Euro(payoff_func, random_walk)
         analy = 2.165238512096621
         np.random.seed(1)
-        result = MCEuroExperiment(analy, 14, 19, opt)
+        result = MCEuroExperiment(analy, 14, 19, opt, "V2")
         hdpPickle.dump(result, 'MCEuro_4dGA.pickle')
         print(result)
     
@@ -51,7 +51,7 @@ class Test(unittest.TestCase):
         opt = Euro(payoff_func, random_walk)
         analy = 2.165238512096621
         np.random.seed(1)
-        result = MCEuroExperiment_Sobol(analy, 14, 19, opt)
+        result = MCEuroExperiment(analy, 14, 19, opt, "V4")
         hdpPickle.dump(result, 'MCEuro_4dGA_Sobol.pickle')
         print(result)
 

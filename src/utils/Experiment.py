@@ -49,7 +49,7 @@ def FFTConvExperiment(analytical_sol, n_start, n_end, FFT_Euro, L_multiplier=30)
         times.append(end - start)
     return ExperimentResult(N, results, times, errors, analytical_sol)
 
-def MCEuroExperiment(analytical_sol, n_start, n_end, MC_Euro):
+def MCEuroExperiment(analytical_sol, n_start, n_end, MC_Euro, func_ver):
     results = []
     errors = []
     times = []
@@ -57,25 +57,14 @@ def MCEuroExperiment(analytical_sol, n_start, n_end, MC_Euro):
     N = 2**np.array(r)
     for n in N:
         start = timer()
-        result = MC_Euro.priceV2(n)
+        if func_ver == "V2":
+            result = MC_Euro.priceV2(n)
+        elif func_ver == "V4":
+            result = MC_Euro.priceV4(n)
+        else:
+            raise RuntimeError("MCEuroExperiment: func_ver is not supported")
         end = timer()
         results.append(result)
         errors.append(abs(results[-1] - analytical_sol))
         times.append(end - start)
     return ExperimentResult(N, results, times, errors, analytical_sol)
-
-def MCEuroExperiment_Sobol(analytical_sol, n_start, n_end, MC_Euro):
-    results = []
-    errors = []
-    times = []
-    r = range(n_start, n_end)
-    N = 2**np.array(r)
-    for n in N:
-        start = timer()
-        result = MC_Euro.priceV4(n)
-        end = timer()
-        results.append(result)
-        errors.append(abs(results[-1] - analytical_sol))
-        times.append(end - start)
-    return ExperimentResult(N, results, times, errors, analytical_sol)
-
