@@ -2,6 +2,7 @@ import sys, os, time
 DIR_LOC = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(DIR_LOC+"/..")
 from blackscholes.dgm.DGMNet import DGMNet
+from blackscholes.dgm.Hessian import fd_hessian
 from utils.Domain import Sampler1d, SamplerNd
 import utils.Pickle as pickle
 import tensorflow as tf
@@ -53,7 +54,7 @@ class Euro:
                 print("Iteration {}: Loss: {}; L1: {}; L3: {}".format(i, loss, L1, L3))
 
 
-    def loss_func(self, model, S_interior, t_interior, S_terminal, t_terminal):
+    def loss_func(self, model, S_interior, t_interior, S_terminal, t_terminal, use_fd_hessian=True):
         ''' Compute total loss for training.
         
         Args:
@@ -68,8 +69,11 @@ class Euro:
         V = model(S_interior, t_interior)
         V_t = tf.gradients(V, t_interior)[0]
         V_s = tf.gradients(V, S_interior)[0]
-        V_ss = tf.hessians(V, S_interior)[0]
-        V_ss = tf.reduce_sum(V_ss, axis=2)
+        if use_fd_hessian:
+            V_ss = fd_hessian(model, S_interior, t_interior, 0.0001)
+        else:
+            V_ss = tf.hessians(V, S_interior)[0]
+            V_ss = tf.reduce_sum(V_ss, axis=2)
 
         cov_Vss = tf.multiply(V_ss, self.cov_mat)
         sec_ords = tf.map_fn(lambda x: tf.reduce_sum(tf.tensordot(S_interior, x, 1) * S_interior, axis=1) / 2,\
