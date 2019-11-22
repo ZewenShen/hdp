@@ -84,11 +84,10 @@ class Euro:
 
         # compute average L2-norm of differential operator
         L1 = tf.reduce_mean(tf.square(diff_V))
-        
-        
+                
         # Loss term #3: initial/terminal condition
         target_payoff = self.payoff_func(S_terminal)
-        fitted_payoff = model(S_terminal, t_terminal)
+        fitted_payoff = tf.reshape(model(S_terminal, t_terminal), [-1])
         
         L3 = tf.reduce_mean(tf.square(fitted_payoff - target_payoff))
         return L1, L3
