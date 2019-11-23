@@ -25,6 +25,13 @@ class Euro:
         self.sampler = sampler if sampler is not None else SamplerNd(domain)
 
     def run(self,  n_samples, steps_per_sample, n_layers=3, layer_width=50, n_interior=1000, n_terminal=100, saved_name=None):
+        if not saved_name:
+            pickle_dir = DIR_LOC+"/saved_models/{}_Euro".format(time.strftime("%Y%m%d"))
+            saved_name = "{}_Euro.ckpt".format(time.strftime("%Y%m%d"))
+        else:
+            pickle_dir = DIR_LOC+"/saved_models/{}_{}".format(time.strftime("%Y%m%d"), saved_name)
+            saved_name = time.strftime("%Y%m%d") + "_" + saved_name + ".ckpt"
+
         model = DGMNet(n_layers, layer_width, input_dim=self.dim)
         self.model = model
         S_interior_tnsr = tf.placeholder(tf.float32, [None, self.dim])
@@ -41,6 +48,7 @@ class Euro:
         learning_rate = tf.train.piecewise_constant(global_step, boundaries, values)
         optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss_tnsr)
 
+        model_saver = tf.train.Saver()
         self.loss_vec, self.L1_vec, self.L3_vec = [], [], []
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
@@ -52,7 +60,23 @@ class Euro:
                                    S_terminal_tnsr: S_terminal, t_terminal_tnsr: t_terminal})
                 self.loss_vec.append(loss); self.L1_vec.append(L1); self.L3_vec.append(L3)
                 print("Iteration {}: Loss: {}; L1: {}; L3: {}".format(i, loss, L1, L3))
+            model_saver.save(sess, DIR_LOC+"/saved_models/"+saved_name)
+        pickle.dump(self.loss_vec, pickle_dir+"_lossvec.pickle")
+        pickle.dump(self.L1_vec, pickle_dir+"_l1vec.pickle")
+        # pickle.dump(self.L2_vec, pickle_dir+"_l2vec.pickle")
+        pickle.dump(self.L3_vec, pickle_dir+"_l3vec.pickle")
 
+    def restore(self, S, t, saved_name, n_layers=3, layer_width=50):
+        self.model = DGMNet(n_layers, layer_width, input_dim=self.dim)
+        S_interior_tnsr = tf.placeholder(tf.float32, [None, self.dim])
+        t_interior_tnsr = tf.placeholder(tf.float32, [None, 1])
+        V = self.model(S_interior_tnsr, t_interior_tnsr)
+        model_saver = tf.train.Saver()
+        with tf.Session() as sess:
+            model_saver.restore(sess, DIR_LOC+'/saved_models/{}.ckpt'.format(saved_name))
+            fitted_optionValue = sess.run(V, feed_dict= {S_interior_tnsr: S, t_interior_tnsr: t})
+            print("Model {}: {}".format(saved_name, fitted_optionValue.T))
+            return fitted_optionValue.T
 
     def loss_func(self, model, S_interior, t_interior, S_terminal, t_terminal, use_fd_hessian=True):
         ''' Compute total loss for training.
@@ -154,8 +178,8 @@ class Euro1d:
 
     def restore(self, S, t, saved_name, n_layers=3, layer_width=50):
         self.model = DGMNet(n_layers, layer_width, input_dim=1)
-        S_interior_tnsr = tf.placeholder(tf.float32, [None,1])
-        t_interior_tnsr = tf.placeholder(tf.float32, [None,1])
+        S_interior_tnsr = tf.placeholder(tf.float32, [None, 1])
+        t_interior_tnsr = tf.placeholder(tf.float32, [None, 1])
         V = self.model(S_interior_tnsr, t_interior_tnsr)
         model_saver = tf.train.Saver()
         with tf.Session() as sess:
