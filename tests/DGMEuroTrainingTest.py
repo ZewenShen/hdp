@@ -30,7 +30,7 @@ class Test(unittest.TestCase):
         corr_mat = 0.25 * np.ones((dim, dim), dtype=np.float32)
         np.fill_diagonal(corr_mat, 1)
         solver = Euro(payoff_func, domain, vol_vec, ir, dividend_vec, corr_mat)
-        solver.run(n_samples=2000, steps_per_sample=10)
+        solver.run(n_samples=2000, steps_per_sample=10, saved_name="euro2d_geometric")
 
     def test_euro1d(self):
         tf.random.set_random_seed(4)
