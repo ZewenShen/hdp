@@ -26,11 +26,13 @@ class Test(unittest.TestCase):
         domain = DomainNd(np.array([[0, 3], [0, 3]], dtype=np.float32), T)
         vol_vec, ir, dividend_vec, strike = 0.1*np.ones(dim, dtype=np.float32), 0.03, 0.01*np.ones(dim, dtype=np.float32), 1
         
-        payoff_func = lambda x: tf.nn.relu(tf.math.reduce_sum(x, axis=1) - strike)
+        # payoff_func = lambda x: tf.nn.relu(tf.math.reduce_sum(x, axis=1) - strike)
+        payoff_func = lambda x: tf.nn.relu(tf.pow(tf.math.reduce_prod(x, axis=1), 1/dim) - strike)
+
         corr_mat = 0.25 * np.ones((dim, dim), dtype=np.float32)
         np.fill_diagonal(corr_mat, 1)
         solver = Euro(payoff_func, domain, vol_vec, ir, dividend_vec, corr_mat)
-        solver.run(n_samples=2000, steps_per_sample=10, saved_name="euro2d_geometric")
+        solver.run(n_samples=30000, steps_per_sample=1, saved_name="euro2d_geometric")
 
     def test_euro1d(self):
         tf.random.set_random_seed(4)

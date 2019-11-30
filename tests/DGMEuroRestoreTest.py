@@ -19,20 +19,20 @@ class Test(unittest.TestCase):
         corr_mat = 0.25 * np.ones((dim, dim), dtype=np.float32)
         np.fill_diagonal(corr_mat, 1)
         S = np.array([[1, 1], [2, 2]])
-        t = np.zeros(2)
+        t = np.zeros(2).reshape(-1, 1)
         self.restore_helper_geometric(S, t, model_name, dim, T, domain, vol_vec, ir, dividend_vec, strike, corr_mat)
 
     def restore_helper_geometric(self, S, t, model_name, dim, T, domain, vol_vec, ir, dividend_vec, strike, corr_mat):
         payoff_func = lambda x: tf.nn.relu(tf.math.reduce_sum(x, axis=1) - strike)
         solver = Euro(payoff_func, domain, vol_vec, ir, dividend_vec, corr_mat)
         fitted = solver.restore(S, t, model_name)
-
+        print(fitted)
         # diff = abs(fitted-real)
         # plt.plot(Sanaly, real, alpha=0.7, label="Real")
-        plt.plot(Sanaly, fitted[0], alpha=0.7, label="Approx")
+        # plt.plot(Sanaly, fitted[0], alpha=0.7, label="Approx")
         # print("error: {}; max error:{}; mean error: {}".format(diff, np.max(diff), np.mean(diff)))
-        plt.legend()
-        plt.show()
+        # plt.legend()
+        # plt.show()
 
     def test_euro1d_restore(self):
         model_name = "Euro1d_20190914"
