@@ -1,7 +1,8 @@
 import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(__file__))+"/../src")
 from blackscholes.fft.Conv import ConvEuro
-from blackscholes.fft.GeometricAvg import Euro
+from blackscholes.fft.GeometricAvg import Euro as GAEuro
+from blackscholes.fft.Basket import Euro as BasEuro, Digital
 from utils.Experiment import FFTConvExperiment
 import utils.Pickle as hdpPickle
 from blackscholes.utils.Analytical import GeometricAvg as AnalyticalGA, Analytical_Sol as Ana1d
@@ -12,6 +13,34 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 class Test(unittest.TestCase):
+
+    def test_conv_rate_5dDig(self):
+        dim = 6
+        T = 1
+        strike = 40
+        init_price_vec = np.full(dim, 40)
+        vol = 0.2
+        ir = 0.06
+        dividend = 0.04
+        corr = 0.25
+        euro = Digital(strike, init_price_vec, T, ir, vol, dividend, corr, 1)
+        result = FFTConvExperiment(0.45, 2, 7, euro, 10)
+        hdpPickle.dump(result, 'FFTconv_rate_5dDig.pickle')
+        print(result)
+
+    def test_conv_rate_6dBas(self):
+        dim = 6
+        T = 1
+        strike = 40
+        init_price_vec = np.full(dim, 40)
+        vol = 0.2
+        ir = 0.06
+        dividend = 0.04
+        corr = 0.25
+        euro = BasEuro(strike, init_price_vec, T, ir, vol, dividend, corr, 1)
+        result = FFTConvExperiment(1.5, 2, 6, euro, 10)
+        hdpPickle.dump(result, 'FFTconv_rate_6dBas.pickle')
+        print(result)
 
     def test_1d_boundary_sol(self):
         T = 1
@@ -48,7 +77,7 @@ class Test(unittest.TestCase):
         ir = 0.06
         dividend = 0.04
         corr = 0.25
-        euro = Euro(strike, init_price_vec, T, ir, vol, dividend, corr, 1)
+        euro = GAEuro(strike, init_price_vec, T, ir, vol, dividend, corr, 1)
         analy = AnalyticalGA(dim, init_price_vec, strike, T, ir, vol, dividend, corr).european_option_price()
         result = FFTConvExperiment(analy, 6, 7, euro, 10)
         print(result)
@@ -76,7 +105,7 @@ class Test(unittest.TestCase):
         ir = 0.06
         dividend = 0.04
         corr = 0.25
-        euro = Euro(strike, init_price_vec, T, ir, vol, dividend, corr, 1)
+        euro = GAEuro(strike, init_price_vec, T, ir, vol, dividend, corr, 1)
         analy = AnalyticalGA(dim, init_price_vec, strike, T, ir, vol, dividend, corr).european_option_price()
         result = FFTConvExperiment(analy, 6, 7, euro, 10)
         print(result)
@@ -104,7 +133,7 @@ class Test(unittest.TestCase):
         ir = 0.06
         dividend = 0.04
         corr = 0.25
-        euro = Euro(strike, init_price_vec, T, ir, vol, dividend, corr, 1)
+        euro = GAEuro(strike, init_price_vec, T, ir, vol, dividend, corr, 1)
         analy = AnalyticalGA(dim, init_price_vec, strike, T, ir, vol, dividend, corr).european_option_price()
         result = FFTConvExperiment(analy, 3, 7, euro, 10)
         hdpPickle.dump(result, 'FFTconv_rate_4dGA.pickle')
@@ -119,7 +148,7 @@ class Test(unittest.TestCase):
         ir = 0.06
         dividend = 0.04
         corr = 0.25
-        euro = Euro(strike, init_price_vec, T, ir, vol, dividend, corr, 1)
+        euro = GAEuro(strike, init_price_vec, T, ir, vol, dividend, corr, 1)
         analy = AnalyticalGA(dim, init_price_vec, strike, T, ir, vol, dividend, corr).european_option_price()
         result = FFTConvExperiment(analy, 3, 7, euro, 10)
         # hdpPickle.dump(result, 'FFTconv_rate_4dGA.pickle')
