@@ -106,6 +106,26 @@ class GBM:
             simulations.append(sim_antithetic)
         return np.array(simulations)
 
+    def simulateV4_T_antithetic(self, M):
+        """
+        Vanilla simulation using the lognormal distribution.
+        Only returns the stock price at time T.
+        RNG: the sobol sequence
+        """
+        simulations = []
+        drift_vec = self.ir - self.dividend_vec
+        fixed = np.multiply(self.init_price_vec, np.exp((drift_vec-self.vol_vec**2/2)*self.T))
+        L = np.linalg.cholesky(self.corr_mat)
+        sobol_seq = i4_sobol_generate_std_normal(self.asset_num, M)
+        for i in range(M):
+            dW = L.dot(sobol_seq[i])*sqrt(self.T)
+            rand_term = np.multiply(self.vol_vec, dW)
+            sim = np.multiply(fixed, np.exp(rand_term))
+            sim_antithetic = np.multiply(fixed, np.exp(-rand_term))
+            simulations.append(sim)
+            simulations.append(sim_antithetic)
+        return np.array(simulations)
+
     def antithetic_simulate(self, M):
         simulations = []
         drift_vec = self.ir - self.dividend_vec

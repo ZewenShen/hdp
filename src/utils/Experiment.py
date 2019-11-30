@@ -66,6 +66,8 @@ def MCEuroExperiment(analytical_sol, n_start, n_end, MC_Euro, func_ver):
             result = MC_Euro.priceV4(n)
         elif func_ver == "V5": # antithetic
             result = MC_Euro.priceV5(n)
+        elif func_ver == "V6":
+            result = MC_Euro.priceV6(n)
         else:
             raise RuntimeError("MCEuroExperiment: func_ver is not supported")
         end = timer()
