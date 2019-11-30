@@ -61,11 +61,12 @@ class GBM:
         """
         simulations = []
         drift_vec = self.ir - self.dividend_vec
+        fixed = np.multiply(self.init_price_vec, np.exp((drift_vec-self.vol_vec**2/2)*self.T))
         L = np.linalg.cholesky(self.corr_mat)
         for _ in range(M):
             dW = L.dot(np.random.normal(size=self.asset_num))*sqrt(self.T)
             rand_term = np.multiply(self.vol_vec, dW)
-            sim = np.multiply(self.init_price_vec, np.exp((drift_vec-self.vol_vec**2/2)*self.T + rand_term))
+            sim = np.multiply(fixed, np.exp(rand_term))
             simulations.append(sim)
         return np.array(simulations)
     
@@ -77,13 +78,32 @@ class GBM:
         """
         simulations = []
         drift_vec = self.ir - self.dividend_vec
+        fixed = np.multiply(self.init_price_vec, np.exp((drift_vec-self.vol_vec**2/2)*self.T))
         L = np.linalg.cholesky(self.corr_mat)
         sobol_seq = i4_sobol_generate_std_normal(self.asset_num, M)
         for i in range(M):
             dW = L.dot(sobol_seq[i])*sqrt(self.T)
             rand_term = np.multiply(self.vol_vec, dW)
-            sim = np.multiply(self.init_price_vec, np.exp((drift_vec-self.vol_vec**2/2)*self.T + rand_term))
+            sim = np.multiply(fixed, np.exp(rand_term))
             simulations.append(sim)
+        return np.array(simulations)
+    
+    def simulateV2_T_antithetic(self, M):
+        """
+        Vanilla simulation using the lognormal distribution with antithetic variates.
+        Only returns the stock price at time T.
+        """
+        simulations = []
+        drift_vec = self.ir - self.dividend_vec
+        fixed = np.multiply(self.init_price_vec, np.exp((drift_vec-self.vol_vec**2/2)*self.T))
+        L = np.linalg.cholesky(self.corr_mat)
+        for _ in range(M):
+            dW = L.dot(np.random.normal(size=self.asset_num))*sqrt(self.T)
+            rand_term = np.multiply(self.vol_vec, dW)
+            sim = np.multiply(fixed, np.exp(rand_term))
+            sim_antithetic = np.multiply(fixed, np.exp(-rand_term))
+            simulations.append(sim)
+            simulations.append(sim_antithetic)
         return np.array(simulations)
 
     def antithetic_simulate(self, M):

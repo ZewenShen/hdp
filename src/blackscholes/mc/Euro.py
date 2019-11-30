@@ -45,6 +45,14 @@ class Euro:
         payoff = self.payoff_func(self.simulation_result)
         return np.mean(payoff) * np.exp(-self.random_walk.ir * self.random_walk.T)
     
+    def priceV5(self, path_num=10000):
+        """
+        Stock prices approximated by the analytical solution to the SDE with antithetic variates.
+        """
+        self.simulation_result = self.random_walk.simulateV2_T_antithetic(int(path_num/2))
+        payoff = self.payoff_func(self.simulation_result)
+        return np.mean(payoff) * np.exp(-self.random_walk.ir * self.random_walk.T)
+    
     def price1d_control_variates(self, path_num=1000):
         assert len(self.random_walk.init_price_vec) == 1
         self.simulation_result = self.random_walk.simulate(path_num)
