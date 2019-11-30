@@ -5,6 +5,7 @@ from scipy.stats import norm
 import numpy as np
 
 class GeometricAvg:
+    
     def __init__(self, dim, spot, strike, T, ir, vol_vec, dividend, corr_mat):
         self.spot = spot
         self.strike = strike
@@ -30,6 +31,22 @@ class GeometricAvg:
         d2 = d1 - sigma * self.T**0.5
         return np.exp(-self.ir * self.T) * (F * norm.cdf(d1) - self.strike * norm.cdf(d2))
 
+    
+    def delta(self):
+        deltas = []
+        for i in range(self.dim):
+            h = 1.5e-8 * self.spot[i]
+            sm2, sm1, sp1, sp2 = np.array(self.spot), np.array(self.spot), np.array(self.spot), np.array(self.spot)
+            sm2[i] -= 2*h
+            sm1[i] -= h
+            sp1[i] += h
+            sp2[i] += 2*h
+            gm2 = GeometricAvg(self.dim, sm2, self.strike, self.T, self.ir, self.vol_vec, self.dividend, self.corr_mat).european_option_price()
+            gm1 = GeometricAvg(self.dim, sm1, self.strike, self.T, self.ir, self.vol_vec, self.dividend, self.corr_mat).european_option_price()
+            gp1 = GeometricAvg(self.dim, sp1, self.strike, self.T, self.ir, self.vol_vec, self.dividend, self.corr_mat).european_option_price()
+            gp2 = GeometricAvg(self.dim, sp2, self.strike, self.T, self.ir, self.vol_vec, self.dividend, self.corr_mat).european_option_price()
+            deltas.append((-gp2 + 8*gp1 - 8*gm1 + gm2) / (12 * h))
+        return deltas
 
 """
 @author: Abhirup Mishra
