@@ -24,7 +24,8 @@ class Euro:
         self.cov_mat = (self.vol_vec[np.newaxis].T @ self.vol_vec[np.newaxis]) * corr_mat
         self.sampler = sampler if sampler is not None else SamplerNd(domain)
 
-    def run(self,  n_samples, steps_per_sample, n_layers=3, layer_width=50, n_interior=1000, n_terminal=100, saved_name=None):
+    def run(self,  n_samples, steps_per_sample, n_layers=3, layer_width=50, n_interior=1000,\
+            n_terminal=100, saved_name=None, use_fd_hessian=True):
         if not saved_name:
             pickle_dir = DIR_LOC+"/saved_models/{}_Euro".format(time.strftime("%Y%m%d"))
             saved_name = "{}_Euro.ckpt".format(time.strftime("%Y%m%d"))
@@ -39,7 +40,7 @@ class Euro:
         S_terminal_tnsr = tf.placeholder(tf.float32, [None, self.dim])
         t_terminal_tnsr = tf.placeholder(tf.float32, [None, 1])
         L1_tnsr, L3_tnsr = self.loss_func(model, S_interior_tnsr, t_interior_tnsr,\
-            S_terminal_tnsr, t_terminal_tnsr)
+            S_terminal_tnsr, t_terminal_tnsr, use_fd_hessian=use_fd_hessian)
         loss_tnsr = L1_tnsr + L3_tnsr
 
         global_step = tf.Variable(0, trainable=False)
@@ -78,7 +79,7 @@ class Euro:
             print("Model {}: {}".format(saved_name, fitted_optionValue.T))
             return fitted_optionValue.T
 
-    def loss_func(self, model, S_interior, t_interior, S_terminal, t_terminal, use_fd_hessian=True):
+    def loss_func(self, model, S_interior, t_interior, S_terminal, t_terminal, use_fd_hessian):
         ''' Compute total loss for training.
         
         Args:
@@ -90,8 +91,8 @@ class Euro:
         ''' 
         # Loss term #1: PDE
         # compute function value and derivatives at current sampled points
-        V = model(S_interior, t_interior)
-        V_t = tf.gradients(V, t_interior)[0]
+        V = tf.reshape(model(S_interior, t_interior), [-1])
+        V_t = tf.reshape(tf.gradients(V, t_interior)[0], [-1])
         V_s = tf.gradients(V, S_interior)[0]
         if use_fd_hessian:
             V_ss = fd_hessian(model, S_interior, t_interior, 1.5e-8 * tf.reduce_mean(S_interior))
