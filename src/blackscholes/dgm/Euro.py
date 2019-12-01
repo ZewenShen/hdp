@@ -91,11 +91,11 @@ class Euro:
         ''' 
         # Loss term #1: PDE
         # compute function value and derivatives at current sampled points
-        V = tf.reshape(model(S_interior, t_interior), [-1])
-        V_t = tf.reshape(tf.gradients(V, t_interior)[0], [-1])
+        V = model(S_interior, t_interior)
+        V_t = tf.gradients(V, t_interior)[0]
         V_s = tf.gradients(V, S_interior)[0]
         if use_fd_hessian:
-            V_ss = fd_hessian(model, S_interior, t_interior, 1.5e-8 * tf.reduce_mean(S_interior))
+            V_ss = fd_hessian(model, S_interior, t_interior, 1.5e-6 * tf.reduce_mean(S_interior))
         else:
             V_ss = tf.hessians(V, S_interior)[0]
             V_ss = tf.reduce_sum(V_ss, axis=2)
@@ -105,16 +105,16 @@ class Euro:
                     cov_Vss)
         sec_ord = tf.reduce_sum(sec_ords, axis=1)
         first_ord = tf.reduce_sum(tf.multiply(tf.multiply(V_s, S_interior), self.ir - self.dividend_vec), axis=1)
-        diff_V = V_t + sec_ord + first_ord - self.ir * V
+        diff_V = tf.reshape(V_t, [-1]) + sec_ord + first_ord - self.ir * tf.reshape(V, [-1])
 
         # compute average L2-norm of differential operator
-        L1 = tf.reduce_mean(tf.square(diff_V))
+        L1 = tf.reduce_mean(tf.math.square(diff_V))
                 
         # Loss term #3: initial/terminal condition
         target_payoff = self.payoff_func(S_terminal)
         fitted_payoff = tf.reshape(model(S_terminal, t_terminal), [-1])
         
-        L3 = tf.reduce_mean(tf.square(fitted_payoff - target_payoff))
+        L3 = tf.reduce_mean(tf.math.square(fitted_payoff - target_payoff))
         return L1, L3
 
 class Euro1d:
