@@ -24,8 +24,8 @@ class Euro:
         self.cov_mat = (self.vol_vec[np.newaxis].T @ self.vol_vec[np.newaxis]) * corr_mat
         self.sampler = sampler if sampler is not None else SamplerNd(domain)
 
-    def run(self,  n_samples, steps_per_sample, n_layers=3, layer_width=50, n_interior=1000,\
-            n_terminal=100, saved_name=None, use_fd_hessian=True):
+    def run(self,  n_samples, steps_per_sample, n_layers=3, layer_width=50, n_interior=500,\
+            n_terminal=500, saved_name=None, use_fd_hessian=True):
         if not saved_name:
             pickle_dir = DIR_LOC+"/saved_models/{}_Euro".format(time.strftime("%Y%m%d"))
             saved_name = "{}_Euro.ckpt".format(time.strftime("%Y%m%d"))

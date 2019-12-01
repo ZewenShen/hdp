@@ -77,10 +77,8 @@ class Domain2d(Domain1d):
         return hx, hy, ht
 
 class SamplerNd:
+    
     def __init__(self, domainNd):
-        """
-        S_multiplier: Sample from a domain larger than the preset domain
-        """
         self.domain = domainNd
     
     def run(self, n_interior, n_terminal):
