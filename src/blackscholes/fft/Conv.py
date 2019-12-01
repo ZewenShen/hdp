@@ -34,14 +34,19 @@ class ConvEuro:
         k_vecs = ConvEuro.iterable_k_vec(N_vec)
         ys = y[np.arange(len(y)), k_vecs]
         self.points = self.S0_vec * np.exp(ys)
-        us = u[np.arange(len(u)), k_vecs]
         V = self.payoff_func(self.S0_vec * np.exp(ys)).reshape(N_vec) # denormalize price
+        del ys
+        
         G = ConvEuro.G(k_vecs, N_vec)
-        # self.vg = V*G
-        # self.ivg = np.fft.ifftn(V*G)
+        us = u[np.arange(len(u)), k_vecs]
+        del k_vecs
+
         phi = self.char_func(-us)
+        del us
+
         fourier_price = phi * np.fft.ifftn(V * G)
-        # self.fp = fourier_price
+        del V, G, phi
+
         self.price_mat = abs(np.fft.fftn(fourier_price).real * np.exp(-self.ir * self.T))
         return self.price_mat[tuple((N_vec/2).astype(int))]
 
