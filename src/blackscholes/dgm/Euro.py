@@ -25,7 +25,7 @@ class Euro:
         self.sampler = sampler if sampler is not None else SamplerNd(domain)
 
     def run(self,  n_samples, steps_per_sample, n_layers=3, layer_width=50, n_interior=500,\
-            n_terminal=500, saved_name=None, use_fd_hessian=True):
+            n_terminal=500, saved_name=None, use_fd_hessian=True, use_L2_err=True):
         if not saved_name:
             pickle_dir = DIR_LOC+"/saved_models/{}_Euro".format(time.strftime("%Y%m%d"))
             saved_name = "{}_Euro.ckpt".format(time.strftime("%Y%m%d"))
@@ -40,7 +40,7 @@ class Euro:
         S_terminal_tnsr = tf.placeholder(tf.float32, [None, self.dim])
         t_terminal_tnsr = tf.placeholder(tf.float32, [None, 1])
         L1_tnsr, L3_tnsr = self.loss_func(model, S_interior_tnsr, t_interior_tnsr,\
-            S_terminal_tnsr, t_terminal_tnsr, use_fd_hessian=use_fd_hessian)
+            S_terminal_tnsr, t_terminal_tnsr, use_fd_hessian=use_fd_hessian, use_L2_err=use_L2_err)
         loss_tnsr = L1_tnsr + L3_tnsr
 
         global_step = tf.Variable(0, trainable=False)
@@ -79,7 +79,7 @@ class Euro:
             print("Model {}: {}".format(saved_name, fitted_optionValue.T))
             return fitted_optionValue.T
 
-    def loss_func(self, model, S_interior, t_interior, S_terminal, t_terminal, use_fd_hessian):
+    def loss_func(self, model, S_interior, t_interior, S_terminal, t_terminal, use_fd_hessian, use_L2_err):
         ''' Compute total loss for training.
         
         Args:
@@ -114,7 +114,10 @@ class Euro:
         target_payoff = self.payoff_func(S_terminal)
         fitted_payoff = tf.reshape(model(S_terminal, t_terminal), [-1])
         
-        L3 = tf.reduce_mean(tf.math.square(fitted_payoff - target_payoff))
+        if use_L2_err:
+            L3 = tf.reduce_mean(tf.math.square(fitted_payoff - target_payoff))
+        else:
+            L3 = tf.reduce_mean(tf.math.abs(fitted_payoff - target_payoff))
         return L1, L3
 
 class Euro1d:
