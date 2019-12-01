@@ -94,8 +94,11 @@ class Euro:
         V = model(S_interior, t_interior)
         V_t = tf.gradients(V, t_interior)[0]
         V_s = tf.gradients(V, S_interior)[0]
+        S_mean = tf.reduce_mean(S_interior)
         if use_fd_hessian:
-            V_ss = fd_hessian(model, S_interior, t_interior, 1.5e-6 * tf.reduce_mean(S_interior))
+            V_ss = (fd_hessian(model, S_interior, t_interior, 1.5e-6 * S_mean) + \
+                   fd_hessian(model, S_interior, t_interior, 1.5e-7 * S_mean) + \
+                   fd_hessian(model, S_interior, t_interior, 1.5e-8 * S_mean)) / 3
         else:
             V_ss = tf.hessians(V, S_interior)[0]
             V_ss = tf.reduce_sum(V_ss, axis=2)
