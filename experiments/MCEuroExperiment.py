@@ -28,7 +28,7 @@ class Test(unittest.TestCase):
         opt = Euro(payoff_func, random_walk)
         analy = 2.165238512096621
         np.random.seed(1)
-        result = MCEuroExperiment(analy, 14, 21, opt, "V2")
+        result = MCEuroExperiment(analy, 14, 20, opt, "V2")
         hdpPickle.dump(result, 'MCEuro_4dGA.pickle')
         print(result)
     
@@ -51,7 +51,7 @@ class Test(unittest.TestCase):
         opt = Euro(payoff_func, random_walk)
         analy = 2.165238512096621
         np.random.seed(1)
-        result = MCEuroExperiment(analy, 20, 24, opt, "V4")
+        result = MCEuroExperiment(analy, 14, 20, opt, "V4")
         hdpPickle.dump(result, 'MCEuro_4dGA_Sobol.pickle')
         print(result)
 
@@ -74,7 +74,7 @@ class Test(unittest.TestCase):
         opt = Euro(payoff_func, random_walk)
         analy = 2.165238512096621
         np.random.seed(1)
-        result = MCEuroExperiment(analy, 14, 21, opt, "V5")
+        result = MCEuroExperiment(analy, 14, 20, opt, "V5")
         hdpPickle.dump(result, 'MCEuro_4dGA_Anti.pickle')
         print(result)
 
