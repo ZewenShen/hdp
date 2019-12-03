@@ -221,3 +221,6 @@ Add medium dimensional option pricing benchmark (geometric avg payoff). Add expe
 
 # 11.19
 Investigate more closely in the circular convolution. Understand Tensorflow in more depth and implemented the deep Galerkin method N-d European case. Wrote the first two chapters in the thesis: 1. Introduction and 2. Two Frameworks for Option Pricing. Experimented with N-d MC method using sobol sequence. Noticed that the N-d antithetic method may also be useful.
+
+# 11.26
+Thesis: Described three types of low discrepancy methods and their implementations. Completed the gap in "the error bound of the dgm" by proving the BS equation is a parabolic pde. Added the statement of maximum principle. Briefly introduced the architecture of dgm and bsde and compared the two methods.
