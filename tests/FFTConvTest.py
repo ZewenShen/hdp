@@ -73,9 +73,10 @@ class Test(unittest.TestCase):
         assert sum(abs(gamma2 - np.array([0.01348562, 0.01425442]))) < 1e-8
         
     def test_geometric_avg_4d(self):
+        dim = 4
         T = 1
         strike = 40
-        init_price_vec = np.full(4, 40)
+        init_price_vec = np.full(dim, 40)
         vol = 0.2
         ir = 0.06
         dividend = 0.04
@@ -83,8 +84,11 @@ class Test(unittest.TestCase):
         euro = Euro(strike, init_price_vec, T, ir, vol, dividend, corr, 1)
         # import profile
         # profile.run('Euro(40, np.full(4, 40), 1, 0.06, 0.2, 0.04, 0.25, 1).price(6*np.ones(4, dtype=int))')
-        price = euro.price(5*np.ones(4, dtype=int))
+        price = euro.price(5*np.ones(dim, dtype=int), 10)
         assert abs(price - 2.1443240208017147) < 1e-10
+        # print(price)
+        greeks = euro.greeks()
+        print(greeks)
 
 if __name__ == '__main__':
     unittest.main()
