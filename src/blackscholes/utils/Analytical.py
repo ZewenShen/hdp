@@ -31,7 +31,6 @@ class GeometricAvg:
         d2 = d1 - sigma * self.T**0.5
         return np.exp(-self.ir * self.T) * (F * norm.cdf(d1) - self.strike * norm.cdf(d2))
 
-    
     def delta(self):
         deltas = []
         for i in range(self.dim):
@@ -47,6 +46,31 @@ class GeometricAvg:
             gp2 = GeometricAvg(self.dim, sp2, self.strike, self.T, self.ir, self.vol_vec, self.dividend, self.corr_mat).european_option_price()
             deltas.append((-gp2 + 8*gp1 - 8*gm1 + gm2) / (12 * h))
         return deltas
+    
+    def gamma(self):
+        # Doesn't seem to work well
+        epsilons = [1e-7, 2e-7, 3e-7, 4e-7, 5e-7, 5e-8, 6e-8, 7e-8, 8e-8, 9e-8]
+        gammas = []
+        for i in range(self.dim):
+            tmp_gammas = []
+            for h in epsilons:
+                h = 9e-8
+                sm2, sm1, s, sp1, sp2 = np.array(self.spot), np.array(self.spot), np.array(self.spot), np.array(self.spot), np.array(self.spot)
+                sm2[i] -= 2*h
+                sm1[i] -= h
+                sp1[i] += h
+                sp2[i] += 2*h
+                gm2 = GeometricAvg(self.dim, sm2, self.strike, self.T, self.ir, self.vol_vec, self.dividend, self.corr_mat).european_option_price()
+                gm1 = GeometricAvg(self.dim, sm1, self.strike, self.T, self.ir, self.vol_vec, self.dividend, self.corr_mat).european_option_price()
+                g = GeometricAvg(self.dim, s, self.strike, self.T, self.ir, self.vol_vec, self.dividend, self.corr_mat).european_option_price()
+                gp1 = GeometricAvg(self.dim, sp1, self.strike, self.T, self.ir, self.vol_vec, self.dividend, self.corr_mat).european_option_price()
+                gp2 = GeometricAvg(self.dim, sp2, self.strike, self.T, self.ir, self.vol_vec, self.dividend, self.corr_mat).european_option_price()
+                # print(gm2 < gm1 < g < gp1 < gp2)
+                tmp_gammas.append((-gp2 + 16*gp1 - 30*g + 16*gm1 - gm2) / (12 * h**2))
+            # gammas.append((gp1 - 2*g + gm1)/(h**2))
+            # print(tmp_gammas)
+            gammas.append(np.mean(np.array(tmp_gammas)))
+        return gammas
 
 """
 @author: Abhirup Mishra
