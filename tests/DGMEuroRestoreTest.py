@@ -18,8 +18,8 @@ class Test(unittest.TestCase):
         vol_vec, ir, dividend_vec, strike = 0.1*np.ones(dim, dtype=np.float32), 0.03, 0.01*np.ones(dim, dtype=np.float32), 1
         corr_mat = 0.25 * np.ones((dim, dim), dtype=np.float32)
         np.fill_diagonal(corr_mat, 1)
-        S = np.array([[1, 1], [2, 2]])
-        t = np.zeros(2).reshape(-1, 1)
+        S = np.array([[1, 1], [2, 2]], dtype=np.float32)
+        t = np.zeros(2, dtype=np.float32).reshape(-1, 1)
         self.restore_helper_geometric(S, t, model_name, dim, T, domain, vol_vec, ir, dividend_vec, strike, corr_mat)
 
     def restore_helper_geometric(self, S, t, model_name, dim, T, domain, vol_vec, ir, dividend_vec, strike, corr_mat):

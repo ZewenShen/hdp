@@ -128,7 +128,7 @@ class Test(unittest.TestCase):
         dim = 4
         T = 1
         strike = 40
-        init_price_vec = np.full(4, 40)
+        init_price_vec = np.full(4, 40, dtype=np.float64)
         vol = 0.2
         ir = 0.06
         dividend = 0.04
