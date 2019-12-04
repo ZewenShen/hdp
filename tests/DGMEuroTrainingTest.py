@@ -1,6 +1,6 @@
 import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(__file__))+"/../src")
-from blackscholes.dgm.Euro import Euro1d, Euro
+from blackscholes.dgm.Euro import Euro1d, Euro, EuroV2
 from utils.Domain import Domain1d, Sampler1dBoundary2Center, DomainNd, SamplerNd
 from blackscholes.utils.Type import CallPutType
 import unittest
@@ -45,7 +45,7 @@ class Test(unittest.TestCase):
 
         corr_mat = 0.25 * np.ones((dim, dim), dtype=np.float64)
         np.fill_diagonal(corr_mat, 1.0)
-        solver = Euro(payoff_func, domain, vol_vec, ir, dividend_vec, corr_mat)
+        solver = EuroV2(payoff_func, domain, vol_vec, ir, dividend_vec, corr_mat)
         solver.run(n_samples=50000, steps_per_sample=1, saved_name="euroV2_2d_geometric")
 
     def test_euro1d(self):
