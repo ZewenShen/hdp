@@ -98,6 +98,43 @@ class SamplerNd:
         
         return S_interior, t_interior, S_terminal, t_terminal
 
+class SamplerNdV2:
+    
+    def __init__(self, domainNd):
+        self.domain = domainNd
+    
+    def run(self, n_interior, n_boundary, n_terminal):
+        # Sampler #1: domain interior
+        dim, T = self.domain.dim, self.domain.T
+        lower_bound, upper_bound = self.domain.lower_bound, self.domain.upper_bound
+        t_interior = np.random.uniform(low=0, high=T-1e-10, size=[n_interior, 1])
+        S_interior = np.random.uniform(low=lower_bound, high=upper_bound, size=[n_interior, dim])
+
+        # Sampler #2: spatial boundary
+        tmin_boundarys = []
+        Smin_boundarys = []
+        for i in range(dim):
+            t_boundary = np.random.uniform(low=0, high=T-1e-10, size=[n_boundary//2//dim, 1])
+            S_boundary = np.random.uniform(low=lower_bound, high=upper_bound, size=[n_boundary//2//dim, dim])
+            S_boundary[:, i] = lower_bound[i]
+            tmin_boundarys.append(t_boundary)
+            Smin_boundarys.append(S_boundary)
+
+        tmax_boundarys = []
+        Smax_boundarys = []
+        for i in range(dim):
+            t_boundary = np.random.uniform(low=0, high=T-1e-10, size=[n_boundary//2//dim, 1])
+            S_boundary = np.random.uniform(low=lower_bound, high=upper_bound, size=[n_boundary//2//dim, dim])
+            S_boundary[:, i] = upper_bound[i]
+            tmax_boundarys.append(t_boundary)
+            Smax_boundarys.append(S_boundary)
+
+        # Sampler #3: initial/terminal condition
+        t_terminal = T * np.ones((n_terminal, 1))
+        S_terminal = np.random.uniform(low=lower_bound, high=upper_bound, size=[n_terminal, dim])
+        
+        return S_interior, t_interior, Smin_boundarys, tmin_boundarys, Smax_boundarys, tmax_boundarys, S_terminal, t_terminal
+
 class DomainNd:
 
     def __init__(self, range_vec, T):

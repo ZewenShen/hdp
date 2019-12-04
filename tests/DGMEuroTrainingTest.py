@@ -34,6 +34,20 @@ class Test(unittest.TestCase):
         solver = Euro(payoff_func, domain, vol_vec, ir, dividend_vec, corr_mat)
         solver.run(n_samples=30000, steps_per_sample=1, saved_name="euro2d_geometric")
 
+    def test_euroV2_2d(self):
+        dim = 2
+        T = 1.0
+        domain = DomainNd(np.array([[0, 3], [0, 3]], dtype=np.float64), T)
+        vol_vec, ir, dividend_vec, strike = 0.1*np.ones(dim, dtype=np.float64), 0.03, 0.01*np.ones(dim, dtype=np.float64), 1.0
+        
+        # payoff_func = lambda x: tf.nn.relu(tf.math.reduce_sum(x, axis=1) - strike)
+        payoff_func = lambda x: tf.nn.relu(tf.pow(tf.math.reduce_prod(x, axis=1), 1/dim) - strike)
+
+        corr_mat = 0.25 * np.ones((dim, dim), dtype=np.float64)
+        np.fill_diagonal(corr_mat, 1.0)
+        solver = Euro(payoff_func, domain, vol_vec, ir, dividend_vec, corr_mat)
+        solver.run(n_samples=50000, steps_per_sample=1, saved_name="euroV2_2d_geometric")
+
     def test_euro1d(self):
         tf.random.set_random_seed(4)
         np.random.seed(4)
