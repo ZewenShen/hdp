@@ -12,10 +12,10 @@ class Test(unittest.TestCase):
     def test_eurond1d(self):
         dim = 1
         T = 1
-        domain = DomainNd(np.array([[0, 3]], dtype=np.float32), T)
-        vol_vec, ir, dividend_vec, strike = 0.1*np.ones(dim, dtype=np.float32), 0.03, 0.01*np.ones(dim, dtype=np.float32), 1
+        domain = DomainNd(np.array([[0, 3]], dtype=np.float64), T)
+        vol_vec, ir, dividend_vec, strike = 0.1*np.ones(dim, dtype=np.float64), 0.03, 0.01*np.ones(dim, dtype=np.float64), 1
         payoff_func = lambda x: tf.nn.relu(tf.math.reduce_sum(x, axis=1) - strike)
-        corr_mat = 0.25 * np.ones((dim, dim), dtype=np.float32)
+        corr_mat = 0.25 * np.ones((dim, dim), dtype=np.float64)
         np.fill_diagonal(corr_mat, 1)
         solver = Euro(payoff_func, domain, vol_vec, ir, dividend_vec, corr_mat)
         solver.run(n_samples=2000, steps_per_sample=5, n_interior=3, n_terminal=3)
@@ -23,13 +23,13 @@ class Test(unittest.TestCase):
     def test_euro2d(self):
         dim = 2
         T = 1
-        domain = DomainNd(np.array([[0, 3], [0, 3]], dtype=np.float32), T)
-        vol_vec, ir, dividend_vec, strike = 0.1*np.ones(dim, dtype=np.float32), 0.03, 0.01*np.ones(dim, dtype=np.float32), 1
+        domain = DomainNd(np.array([[0, 3], [0, 3]], dtype=np.float64), T)
+        vol_vec, ir, dividend_vec, strike = 0.1*np.ones(dim, dtype=np.float64), 0.03, 0.01*np.ones(dim, dtype=np.float64), 1
         
         # payoff_func = lambda x: tf.nn.relu(tf.math.reduce_sum(x, axis=1) - strike)
         payoff_func = lambda x: tf.nn.relu(tf.pow(tf.math.reduce_prod(x, axis=1), 1/dim) - strike)
 
-        corr_mat = 0.25 * np.ones((dim, dim), dtype=np.float32)
+        corr_mat = 0.25 * np.ones((dim, dim), dtype=np.float64)
         np.fill_diagonal(corr_mat, 1)
         solver = Euro(payoff_func, domain, vol_vec, ir, dividend_vec, corr_mat)
         solver.run(n_samples=30000, steps_per_sample=1, saved_name="euro2d_geometric")

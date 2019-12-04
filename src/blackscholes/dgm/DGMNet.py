@@ -57,26 +57,26 @@ class LSTMLayer(tf.keras.layers.Layer):
         self.n_outputs = n_outputs
         self.n_inputs = n_inputs
 
-        self.Uz = self.add_variable("Uz", shape=[self.n_inputs, self.n_outputs],
+        self.Uz = self.add_variable("Uz", shape=[self.n_inputs, self.n_outputs], dtype=tf.float64,
                                     initializer = tf.contrib.layers.xavier_initializer())
-        self.Ug = self.add_variable("Ug", shape=[self.n_inputs, self.n_outputs],
+        self.Ug = self.add_variable("Ug", shape=[self.n_inputs, self.n_outputs], dtype=tf.float64,
                                     initializer = tf.contrib.layers.xavier_initializer())
-        self.Ur = self.add_variable("Ur", shape=[self.n_inputs, self.n_outputs],
+        self.Ur = self.add_variable("Ur", shape=[self.n_inputs, self.n_outputs], dtype=tf.float64,
                                     initializer = tf.contrib.layers.xavier_initializer())
-        self.Uh = self.add_variable("Uh", shape=[self.n_inputs, self.n_outputs],
+        self.Uh = self.add_variable("Uh", shape=[self.n_inputs, self.n_outputs], dtype=tf.float64,
                                     initializer = tf.contrib.layers.xavier_initializer())
-        self.Wz = self.add_variable("Wz", shape=[self.n_outputs, self.n_outputs],
+        self.Wz = self.add_variable("Wz", shape=[self.n_outputs, self.n_outputs], dtype=tf.float64,
                                     initializer = tf.contrib.layers.xavier_initializer())
-        self.Wg = self.add_variable("Wg", shape=[self.n_outputs, self.n_outputs],
+        self.Wg = self.add_variable("Wg", shape=[self.n_outputs, self.n_outputs], dtype=tf.float64,
                                     initializer = tf.contrib.layers.xavier_initializer())
-        self.Wr = self.add_variable("Wr", shape=[self.n_outputs, self.n_outputs],
+        self.Wr = self.add_variable("Wr", shape=[self.n_outputs, self.n_outputs], dtype=tf.float64,
                                     initializer = tf.contrib.layers.xavier_initializer())
-        self.Wh = self.add_variable("Wh", shape=[self.n_outputs, self.n_outputs],
+        self.Wh = self.add_variable("Wh", shape=[self.n_outputs, self.n_outputs], dtype=tf.float64,
                                     initializer = tf.contrib.layers.xavier_initializer())
-        self.bz = self.add_variable("bz", shape=[1, self.n_outputs])
-        self.bg = self.add_variable("bg", shape=[1, self.n_outputs])
-        self.br = self.add_variable("br", shape=[1, self.n_outputs])
-        self.bh = self.add_variable("bh", shape=[1, self.n_outputs])
+        self.bz = self.add_variable("bz", shape=[1, self.n_outputs], dtype=tf.float64)
+        self.bg = self.add_variable("bg", shape=[1, self.n_outputs], dtype=tf.float64)
+        self.br = self.add_variable("br", shape=[1, self.n_outputs], dtype=tf.float64)
+        self.bh = self.add_variable("bh", shape=[1, self.n_outputs], dtype=tf.float64)
 
         self.activation = _get_function(activation)
 
@@ -101,7 +101,7 @@ class DenseLayer(tf.keras.layers.Layer):
         self.n_inputs = n_inputs
         self.n_outputs = n_outputs
         
-        self.W = self.add_variable("W", shape=[self.n_inputs, self.n_outputs],
+        self.W = self.add_variable("W", shape=[self.n_inputs, self.n_outputs], dtype=tf.float64,
                                    initializer=tf.contrib.layers.xavier_initializer())
         self.b = self.add_variable("b", shape=[1, self.n_outputs])
 

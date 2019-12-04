@@ -37,14 +37,14 @@ class EuroV2:
 
         model = DGMNet(n_layers, layer_width, input_dim=self.dim)
         self.model = model
-        S_interior_tnsr = tf.placeholder(tf.float32, [None, self.dim])
-        t_interior_tnsr = tf.placeholder(tf.float32, [None, 1])
-        Smin_boundary_tnsr = tf.placeholder(tf.float32, [None, self.dim])
-        tmin_boundary_tnsr = tf.placeholder(tf.float32, [None, 1])
-        Smax_boundary_tnsr = tf.placeholder(tf.float32, [None, self.dim])
-        tmax_boundary_tnsr = tf.placeholder(tf.float32, [None, 1])
-        S_terminal_tnsr = tf.placeholder(tf.float32, [None, self.dim])
-        t_terminal_tnsr = tf.placeholder(tf.float32, [None, 1])
+        S_interior_tnsr = tf.placeholder(tf.float64, [None, self.dim])
+        t_interior_tnsr = tf.placeholder(tf.float64, [None, 1])
+        Smin_boundary_tnsr = tf.placeholder(tf.float64, [None, self.dim])
+        tmin_boundary_tnsr = tf.placeholder(tf.float64, [None, 1])
+        Smax_boundary_tnsr = tf.placeholder(tf.float64, [None, self.dim])
+        tmax_boundary_tnsr = tf.placeholder(tf.float64, [None, 1])
+        S_terminal_tnsr = tf.placeholder(tf.float64, [None, self.dim])
+        t_terminal_tnsr = tf.placeholder(tf.float64, [None, 1])
         L1_tnsr, L2min_tnsr, L2max_tnsr, L3_tnsr = self.loss_func(model, S_interior_tnsr, t_interior_tnsr,\
             Smin_boundary_tnsr, tmin_boundary_tnsr, Smax_boundary_tnsr, tmax_boundary_tnsr,\
             S_terminal_tnsr, t_terminal_tnsr, use_fd_hessian=use_fd_hessian, use_L2_err=use_L2_err)
@@ -81,8 +81,8 @@ class EuroV2:
 
     def restore(self, S, t, saved_name, n_layers=3, layer_width=50):
         self.model = DGMNet(n_layers, layer_width, input_dim=self.dim)
-        S_interior_tnsr = tf.placeholder(tf.float32, [None, self.dim])
-        t_interior_tnsr = tf.placeholder(tf.float32, [None, 1])
+        S_interior_tnsr = tf.placeholder(tf.float64, [None, self.dim])
+        t_interior_tnsr = tf.placeholder(tf.float64, [None, 1])
         V = self.model(S_interior_tnsr, t_interior_tnsr)
         model_saver = tf.train.Saver()
         with tf.Session() as sess:
@@ -211,8 +211,8 @@ class Euro:
 
     def restore(self, S, t, saved_name, n_layers=3, layer_width=50):
         self.model = DGMNet(n_layers, layer_width, input_dim=self.dim)
-        S_interior_tnsr = tf.placeholder(tf.float32, [None, self.dim])
-        t_interior_tnsr = tf.placeholder(tf.float32, [None, 1])
+        S_interior_tnsr = tf.placeholder(tf.float64, [None, self.dim])
+        t_interior_tnsr = tf.placeholder(tf.float64, [None, 1])
         V = self.model(S_interior_tnsr, t_interior_tnsr)
         model_saver = tf.train.Saver()
         with tf.Session() as sess:
@@ -289,12 +289,12 @@ class Euro1d:
 
         model = DGMNet(n_layers, layer_width, input_dim=1)
         self.model = model
-        S_interior_tnsr = tf.placeholder(tf.float32, [None, 1])
-        t_interior_tnsr = tf.placeholder(tf.float32, [None, 1])
-        S_boundary_tnsr = tf.placeholder(tf.float32, [None, 1])
-        t_boundary_tnsr = tf.placeholder(tf.float32, [None, 1])
-        S_terminal_tnsr = tf.placeholder(tf.float32, [None, 1])
-        t_terminal_tnsr = tf.placeholder(tf.float32, [None, 1])
+        S_interior_tnsr = tf.placeholder(tf.float64, [None, 1])
+        t_interior_tnsr = tf.placeholder(tf.float64, [None, 1])
+        S_boundary_tnsr = tf.placeholder(tf.float64, [None, 1])
+        t_boundary_tnsr = tf.placeholder(tf.float64, [None, 1])
+        S_terminal_tnsr = tf.placeholder(tf.float64, [None, 1])
+        t_terminal_tnsr = tf.placeholder(tf.float64, [None, 1])
         L1_tnsr, L2_tnsr, L3_tnsr = self.loss_func(model, S_interior_tnsr, t_interior_tnsr,\
             S_boundary_tnsr, t_boundary_tnsr, S_terminal_tnsr, t_terminal_tnsr)
         loss_tnsr = L1_tnsr + L2_tnsr + L3_tnsr
@@ -327,8 +327,8 @@ class Euro1d:
 
     def restore(self, S, t, saved_name, n_layers=3, layer_width=50):
         self.model = DGMNet(n_layers, layer_width, input_dim=1)
-        S_interior_tnsr = tf.placeholder(tf.float32, [None, 1])
-        t_interior_tnsr = tf.placeholder(tf.float32, [None, 1])
+        S_interior_tnsr = tf.placeholder(tf.float64, [None, 1])
+        t_interior_tnsr = tf.placeholder(tf.float64, [None, 1])
         V = self.model(S_interior_tnsr, t_interior_tnsr)
         model_saver = tf.train.Saver()
         with tf.Session() as sess:
