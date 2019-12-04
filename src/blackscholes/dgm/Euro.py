@@ -133,7 +133,7 @@ class EuroV2:
         V_maxboundary = model(Smax_boundary, tmax_boundary)
         V_s_maxboundary = tf.gradients(V_maxboundary, Smax_boundary)[0]
         V_ss_maxboundary = tf.gradients(V_s_maxboundary, Smax_boundary)[0]
-        boundary_n = len(Smax_boundary) // 2 // self.dim
+        boundary_n = tf.shape(Smax_boundary)[0] // 2 // self.dim
         L2max = 0
         for i in range(self.dim):
             cur_sec_deriv = V_ss_maxboundary[i*boundary_n: (i+1)*boundary_n - 1, i]

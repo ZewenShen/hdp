@@ -1,4 +1,5 @@
 import numpy as np
+from functools import reduce
 
 class Domain1d:
 
@@ -119,6 +120,8 @@ class SamplerNdV2:
             S_boundary[:, i] = lower_bound[i]
             tmin_boundarys.append(t_boundary)
             Smin_boundarys.append(S_boundary)
+        tmin_boundarys = reduce(lambda x, y: np.vstack((x, y)), tmin_boundarys)
+        Smin_boundarys = reduce(lambda x, y: np.vstack((x, y)), Smin_boundarys)
 
         tmax_boundarys = []
         Smax_boundarys = []
@@ -128,6 +131,8 @@ class SamplerNdV2:
             S_boundary[:, i] = upper_bound[i]
             tmax_boundarys.append(t_boundary)
             Smax_boundarys.append(S_boundary)
+        tmax_boundarys = reduce(lambda x, y: np.vstack((x, y)), tmax_boundarys)
+        Smax_boundarys = reduce(lambda x, y: np.vstack((x, y)), Smax_boundarys)
 
         # Sampler #3: initial/terminal condition
         t_terminal = T * np.ones((n_terminal, 1))
