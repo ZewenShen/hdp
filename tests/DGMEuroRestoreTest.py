@@ -1,6 +1,6 @@
 import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(__file__))+"/../src")
-from blackscholes.dgm.Euro import Euro1d, Euro
+from blackscholes.dgm.Euro import Euro1d, Euro, EuroV2
 from utils.Domain import Domain1d, DomainNd
 from blackscholes.utils.Type import CallPutType
 from blackscholes.utils.Analytical import Analytical_Sol, GeometricAvg
@@ -11,19 +11,42 @@ import matplotlib.pyplot as plt
 
 class Test(unittest.TestCase):
 
+    def test_euroV2_restore(self):
+        model_name = "euroV2_2d_geometric"
+        T, dim = 1, 2
+        domain = DomainNd(np.array([[0, 3], [0, 3]], dtype=np.float64), T)
+        vol_vec, ir, dividend_vec, strike = 0.1*np.ones(dim, dtype=np.float64), 0.03, 0.01*np.ones(dim, dtype=np.float64), 1
+        corr_mat = 0.25 * np.ones((dim, dim), dtype=np.float64)
+        np.fill_diagonal(corr_mat, 1)
+        S = np.array([[1, 1], [2, 2]], dtype=np.float64)
+        t = np.zeros(2, dtype=np.float64).reshape(-1, 1)
+        self.restore_helper_geometricV2(S, t, model_name, dim, T, domain, vol_vec, ir, dividend_vec, strike, corr_mat)
+
+    def restore_helper_geometricV2(self, S, t, model_name, dim, T, domain, vol_vec, ir, dividend_vec, strike, corr_mat):
+        payoff_func = lambda x: tf.nn.relu(tf.pow(tf.math.reduce_prod(x, axis=1), 1/dim) - strike)
+        solver = EuroV2(payoff_func, domain, vol_vec, ir, dividend_vec, corr_mat)
+        fitted = solver.restore(S, t, model_name)
+        print(fitted)
+        # diff = abs(fitted-real)
+        # plt.plot(Sanaly, real, alpha=0.7, label="Real")
+        # plt.plot(Sanaly, fitted[0], alpha=0.7, label="Approx")
+        # print("error: {}; max error:{}; mean error: {}".format(diff, np.max(diff), np.mean(diff)))
+        # plt.legend()
+        # plt.show()
+
     def test_euro_restore(self):
         model_name = "euro2d_geometric"
         T, dim = 1, 2
-        domain = DomainNd(np.array([[0, 3], [0, 3]], dtype=np.float32), T)
-        vol_vec, ir, dividend_vec, strike = 0.1*np.ones(dim, dtype=np.float32), 0.03, 0.01*np.ones(dim, dtype=np.float32), 1
-        corr_mat = 0.25 * np.ones((dim, dim), dtype=np.float32)
+        domain = DomainNd(np.array([[0, 3], [0, 3]], dtype=np.float64), T)
+        vol_vec, ir, dividend_vec, strike = 0.1*np.ones(dim, dtype=np.float64), 0.03, 0.01*np.ones(dim, dtype=np.float32), 1
+        corr_mat = 0.25 * np.ones((dim, dim), dtype=np.float64)
         np.fill_diagonal(corr_mat, 1)
-        S = np.array([[1, 1], [2, 2]], dtype=np.float32)
-        t = np.zeros(2, dtype=np.float32).reshape(-1, 1)
+        S = np.array([[1, 1], [2, 2]], dtype=np.float64)
+        t = np.zeros(2, dtype=np.float64).reshape(-1, 1)
         self.restore_helper_geometric(S, t, model_name, dim, T, domain, vol_vec, ir, dividend_vec, strike, corr_mat)
 
     def restore_helper_geometric(self, S, t, model_name, dim, T, domain, vol_vec, ir, dividend_vec, strike, corr_mat):
-        payoff_func = lambda x: tf.nn.relu(tf.math.reduce_sum(x, axis=1) - strike)
+        payoff_func = lambda x: tf.nn.relu(tf.pow(tf.math.reduce_prod(x, axis=1), 1/dim) - strike)
         solver = Euro(payoff_func, domain, vol_vec, ir, dividend_vec, corr_mat)
         fitted = solver.restore(S, t, model_name)
         print(fitted)
