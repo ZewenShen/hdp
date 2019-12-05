@@ -49,7 +49,7 @@ class Test(unittest.TestCase):
         solver.run(n_samples=50000, steps_per_sample=1, saved_name="euroV2_2d_geometric")
     
     
-    def test_euro_4d(self):
+    def test_euro4d(self):
         dim = 4
         T = 1.0
         domain = DomainNd(np.array([[20, 70], [20, 70], [20, 70], [20, 70]], dtype=np.float64), T)
@@ -61,7 +61,7 @@ class Test(unittest.TestCase):
         corr_mat = 0.25 * np.ones((dim, dim), dtype=np.float64)
         np.fill_diagonal(corr_mat, 1.0)
         solver = Euro(payoff_func, domain, vol_vec, ir, dividend_vec, corr_mat)
-        solver.run(n_samples=50000, steps_per_sample=1, saved_name="euroV2_2d_geometric")
+        solver.run(n_samples=80000, steps_per_sample=1, saved_name="euro_4d_geometric")
 
     def test_euro1d(self):
         tf.random.set_random_seed(4)
