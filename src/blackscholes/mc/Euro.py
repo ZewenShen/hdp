@@ -17,11 +17,11 @@ class Euro:
     def price(self, path_num=1000, ci=False):
         self.simulation_result = self.random_walk.simulate(path_num)
         last_price = [x[:, -1] for x in self.simulation_result]
-        payoff = self.payoff_func(self.simulation_result) * np.exp(-self.random_walk.ir * self.random_walk.T)
+        payoff = self.payoff_func(last_price) * np.exp(-self.random_walk.ir * self.random_walk.T)
         value = np.mean(payoff) 
         if ci:
-            ci_width = 1.96 * np.std(payoff) / np.sqrt(path_num)
-            return value, ci_width
+            std = np.std(payoff, ddof=1)
+            return value, std
         else:
             return value
 
@@ -33,8 +33,8 @@ class Euro:
         payoff = self.payoff_func(self.simulation_result) * np.exp(-self.random_walk.ir * self.random_walk.T)
         value = np.mean(payoff) 
         if ci:
-            ci_width = 1.96 * np.std(payoff) / np.sqrt(path_num)
-            return value, ci_width
+            std = np.std(payoff, ddof=1)
+            return value, std
         else:
             return value
 
@@ -44,11 +44,11 @@ class Euro:
         """
         self.simulation_result = self.random_walk.simulateV2(path_num)
         last_price = np.array([x[:, -1] for x in self.simulation_result])
-        payoff = self.payoff_func(self.simulation_result) * np.exp(-self.random_walk.ir * self.random_walk.T)
+        payoff = self.payoff_func(last_price) * np.exp(-self.random_walk.ir * self.random_walk.T)
         value = np.mean(payoff) 
         if ci:
-            ci_width = 1.96 * np.std(payoff) / np.sqrt(path_num)
-            return value, ci_width
+            std = np.std(payoff, ddof=1)
+            return value, std
         else:
             return value
 
@@ -60,8 +60,8 @@ class Euro:
         payoff = self.payoff_func(self.simulation_result) * np.exp(-self.random_walk.ir * self.random_walk.T)
         value = np.mean(payoff) 
         if ci:
-            ci_width = 1.96 * np.std(payoff) / np.sqrt(path_num)
-            return value, ci_width
+            std = np.std(payoff, ddof=1)
+            return value, std
         else:
             return value
     
@@ -73,21 +73,21 @@ class Euro:
         payoff = self.payoff_func(self.simulation_result) * np.exp(-self.random_walk.ir * self.random_walk.T)
         value = np.mean(payoff) 
         if ci:
-            ci_width = 1.96 * np.std(payoff) / np.sqrt(path_num)
-            return value, ci_width
+            std = np.std(payoff, ddof=1)
+            return value, std
         else:
             return value
 
     def priceV6(self, path_num=10000, ci=False):
         """
-        Stock prices approximated by the analytical solution to the SDE with antithetic variates.
+        Stock prices approximated by the analytical solution to the SDE with antithetic variates and sobol seq.
         """
         self.simulation_result = self.random_walk.simulateV4_T_antithetic(int(path_num/2))
         payoff = self.payoff_func(self.simulation_result) * np.exp(-self.random_walk.ir * self.random_walk.T)
         value = np.mean(payoff) 
         if ci:
-            ci_width = 1.96 * np.std(payoff) / np.sqrt(path_num)
-            return value, ci_width
+            std = np.std(payoff, ddof=1)
+            return value, std
         else:
             return value
     
