@@ -5,6 +5,7 @@ from scipy.stats import norm
 import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
+tfd = tfp.distributions
 
 
 class GeometricAvg_tf:
@@ -29,11 +30,13 @@ class GeometricAvg_tf:
     def european_option_price(self):
         sigma = (self.vol_vec @ self.corr_mat @ self.vol_vec)**0.5 / self.dim
         F = tf.math.reduce_prod(self.spot)**(1/self.dim) *\
-             tf.math.exp((self.ir - self.dividend - tf.math.reduce_prod(self.vol_vec**2)/(2*self.dim) + sigma**2/2)*self.T)
+             tf.math.exp((self.ir - self.dividend - tf.math.reduce_sum(self.vol_vec**2)/(2*self.dim) + sigma**2/2)*self.T)
         d1 = (tf.math.log(F/self.strike) + sigma**2*self.T/2)/(sigma*self.T**0.5)
         d2 = d1 - sigma * self.T**0.5
-        return tf.math.exp(-self.ir * self.T) * (F * norm.cdf(d1) - self.strike * tfp.bijectors.NormalCDF(d2))
-
+        norm = tfd.Normal(0., 1.)
+        c1 = tf.dtypes.cast(norm.cdf(tf.dtypes.cast(d1, tf.float32)), tf.float64)
+        c2 = tf.dtypes.cast(norm.cdf(tf.dtypes.cast(d2, tf.float32)), tf.float64)
+        return tf.math.exp(-self.ir * self.T) * (F * c1 - self.strike * c2)
 
 class GeometricAvg:
     
