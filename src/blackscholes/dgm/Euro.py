@@ -192,21 +192,13 @@ class EuroV3(EuroV2):
 
         # Loss term #2: boundary condition
         V_minboundary = model(Smin_boundary, tmin_boundary)
-        real_minboundary = []
-        for i in range(tf.shape(Smin_boundary)[0]):
-            ga = GeometricAvg(self.dim, Smin_boundary[i], self.payoff_func.strike, self.domain.T-tmin_boundary[i],\
-                self.ir, self.vol_vec, self.dividend_vec, self.corr_mat).european_option_price()
-            real_minboundary.append(ga)
-        real_minboundary = np.array(real_minboundary)
+        real_minboundary = tf.map_fn(lambda x: GeometricAvg(self.dim, x[:-1], self.payoff_func.strike, self.domain.T-x[-1],\
+                self.ir, self.vol_vec, self.dividend_vec, self.corr_mat).european_option_price(), tf.concat([Smin_boundary, tmin_boundary], 1))
         L2min = tf.reduce_mean(tf.math.square(tf.reshape(V_minboundary, [-1]) - real_minboundary))
 
         V_maxboundary = model(Smax_boundary, tmax_boundary)
-        real_maxboundary = []
-        for i in range(tf.shape(Smax_boundary)[0]):
-            ga = GeometricAvg(self.dim, Smax_boundary[i], self.payoff_func.strike, self.domain.T-tmax_boundary[i],\
-                self.ir, self.vol_vec, self.dividend_vec, self.corr_mat).european_option_price()
-            real_maxboundary.append(ga)
-        real_maxboundary = np.array(real_maxboundary)
+        real_maxboundary = tf.map_fn(lambda x: GeometricAvg(self.dim, x[:-1], self.payoff_func.strike, self.domain.T-x[-1],\
+                self.ir, self.vol_vec, self.dividend_vec, self.corr_mat).european_option_price(), tf.concat([Smax_boundary, tmax_boundary], 1))
         L2max = tf.reduce_mean(tf.math.square(tf.reshape(V_maxboundary, [-1]) - real_maxboundary))
                 
         # Loss term #3: initial/terminal condition
