@@ -25,7 +25,7 @@ class Test(unittest.TestCase):
         payoff_func = lambda x: np.maximum(strike - np.mean(x, axis=1), np.zeros(len(x)))
         random_walk = GBM(T, 400, init_price_vec, ir, vol_vec, dividend_vec, corr_mat)
         opt = Euro(payoff_func, random_walk)
-        MCEuroExperimentStd(10, 19, 1000, opt)
+        MCEuroExperimentStd(10, 19, 500, opt)
 
     def test_conv_rate_6d(self):
         dim = 6
@@ -47,6 +47,28 @@ class Test(unittest.TestCase):
         np.random.seed(1)
         result = MCEuroExperiment(analy, 14, 20, opt, "V2")
         hdpPickle.dump(result, 'MCEuro_6d.pickle')
+        print(result)
+    
+    def test_conv_rate_6d_control(self):
+        dim = 6
+        T = 1
+        strike = 40
+        init_price_vec = np.full(dim, 40)
+        vol = 0.2
+        ir = 0.06
+        dividend = 0.04
+        corr = 0.25
+        vol_vec = np.full(dim, vol)
+        dividend_vec = np.full(dim, dividend)
+        corr_mat = np.full((dim, dim), corr)
+        np.fill_diagonal(corr_mat, 1)
+        payoff_func = lambda x: np.maximum(strike - np.mean(x, axis=1), np.zeros(len(x)))
+        random_walk = GBM(T, 400, init_price_vec, ir, vol_vec, dividend_vec, corr_mat)
+        opt = Euro(payoff_func, random_walk)
+        analy = 1.5
+        np.random.seed(1)
+        result = MCEuroExperiment(analy, 14, 20, opt, "V7")
+        hdpPickle.dump(result, 'MCEuro_6d_control.pickle')
         print(result)
 
     def test_conv_rate_6d_antithetic(self):
@@ -114,6 +136,52 @@ class Test(unittest.TestCase):
         np.random.seed(1)
         result = MCEuroExperiment(analy, 14, 20, opt, "V2")
         hdpPickle.dump(result, 'MCEuro_4dGA.pickle')
+        print(result)
+    
+    def test_conv_rate_4dGA_control(self):
+        from scipy.stats.mstats import gmean
+        dim = 4
+        T = 1
+        strike = 40
+        init_price_vec = np.full(dim, 40)
+        vol = 0.2
+        ir = 0.06
+        dividend = 0.04
+        corr = 0.25
+        vol_vec = np.full(dim, vol)
+        dividend_vec = np.full(dim, dividend)
+        corr_mat = np.full((dim, dim), corr)
+        np.fill_diagonal(corr_mat, 1)
+        payoff_func = lambda x: np.maximum((gmean(x, axis=1) - strike), np.zeros(len(x)))
+        random_walk = GBM(T, 400, init_price_vec, ir, vol_vec, dividend_vec, corr_mat)
+        opt = Euro(payoff_func, random_walk)
+        analy = 2.165238512096621
+        np.random.seed(1)
+        result = MCEuroExperiment(analy, 14, 20, opt, "V7")
+        hdpPickle.dump(result, 'MCEuro_4dGA_control.pickle')
+        print(result)
+    
+    def test_conv_rate_4dGA_control_sobol(self):
+        from scipy.stats.mstats import gmean
+        dim = 4
+        T = 1
+        strike = 40
+        init_price_vec = np.full(dim, 40)
+        vol = 0.2
+        ir = 0.06
+        dividend = 0.04
+        corr = 0.25
+        vol_vec = np.full(dim, vol)
+        dividend_vec = np.full(dim, dividend)
+        corr_mat = np.full((dim, dim), corr)
+        np.fill_diagonal(corr_mat, 1)
+        payoff_func = lambda x: np.maximum((gmean(x, axis=1) - strike), np.zeros(len(x)))
+        random_walk = GBM(T, 400, init_price_vec, ir, vol_vec, dividend_vec, corr_mat)
+        opt = Euro(payoff_func, random_walk)
+        analy = 2.165238512096621
+        np.random.seed(1)
+        result = MCEuroExperiment(analy, 14, 20, opt, "V8")
+        hdpPickle.dump(result, 'MCEuro_4dGA_control_sobol.pickle')
         print(result)
     
     def test_conv_rate_4dGA_Sobol(self):

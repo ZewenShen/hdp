@@ -84,13 +84,42 @@ class Euro:
         """
         self.simulation_result = self.random_walk.simulateV4_T_antithetic(int(path_num/2))
         payoff = self.payoff_func(self.simulation_result) * np.exp(-self.random_walk.ir * self.random_walk.T)
-        value = np.mean(payoff) 
+        value = np.mean(payoff)
         if ci:
             std = np.std(payoff, ddof=1)
             return value, std
         else:
             return value
-    
+        
+    def priceV7(self, path_num=10000):
+        """
+        Stock prices approximated by the analytical solution to the SDE with control variates.
+        """
+        self.simulation_result = self.random_walk.simulateV2_T(path_num)
+        expectation = np.exp((self.random_walk.ir-self.random_walk.dividend_vec)*self.random_walk.T)\
+            * self.random_walk.init_price_vec
+        payoff = self.payoff_func(self.simulation_result) * np.exp(-self.random_walk.ir * self.random_walk.T)
+        cov = np.cov(self.simulation_result.T, payoff)
+        Sx = cov[:-1, :-1]
+        Sxy = cov[-1, :-1]
+        b_hat = np.linalg.inv(Sx) @ Sxy
+        return np.mean(payoff) - b_hat.dot(np.mean(self.simulation_result, axis=0) - expectation)
+
+    def priceV8(self, path_num=10000):
+        """
+        Stock prices approximated by the analytical solution to the SDE with control variates and sobol seq.
+        """
+        self.simulation_result = self.random_walk.simulateV4_T(path_num)
+        expectation = np.exp((self.random_walk.ir-self.random_walk.dividend_vec)*self.random_walk.T)\
+            * self.random_walk.init_price_vec
+        payoff = self.payoff_func(self.simulation_result) * np.exp(-self.random_walk.ir * self.random_walk.T)
+        cov = np.cov(self.simulation_result.T, payoff)
+        Sx = cov[:-1, :-1]
+        Sxy = cov[-1, :-1]
+        b_hat = np.linalg.inv(Sx) @ Sxy
+        return np.mean(payoff) - b_hat.dot(np.mean(self.simulation_result, axis=0) - expectation)
+
+
     def price1d_control_variates(self, path_num=1000):
         assert len(self.random_walk.init_price_vec) == 1
         self.simulation_result = self.random_walk.simulate(path_num)

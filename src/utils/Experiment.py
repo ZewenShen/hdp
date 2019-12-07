@@ -70,6 +70,10 @@ def MCEuroExperiment(analytical_sol, n_start, n_end, MC_Euro, func_ver):
             result = MC_Euro.priceV5(n)
         elif func_ver == "V6":
             result = MC_Euro.priceV6(n)
+        elif func_ver == "V7":
+            result = MC_Euro.priceV7(n)
+        elif func_ver == "V8":
+            result = MC_Euro.priceV8(n)
         else:
             raise RuntimeError("MCEuroExperiment: func_ver is not supported")
         end = timer()
@@ -79,16 +83,17 @@ def MCEuroExperiment(analytical_sol, n_start, n_end, MC_Euro, func_ver):
     return ExperimentResult(r, N, results, times, errors, analytical_sol)
 
 def MCEuroExperimentStd(n_start, n_end, sim_times, MC_Euro):
-    print("N    std1    std2")
+    print("N       Crude       Anti         Ctrl")
     r = range(n_start, n_end)
     N = 2**np.array(r)
     for path_num in N:
-        std1, std2 = MCEuroExperimentStdHelper(sim_times, path_num, MC_Euro)
-        print("{:d}    {:.3e}    {:.3e}".format(int(np.log2(path_num)), std1, std2))
+        std1, std2, std3 = MCEuroExperimentStdHelper(sim_times, path_num, MC_Euro)
+        print("{:d}    {:.2e}    {:.2e}    {:.2e}".format(int(np.log2(path_num)), std1, std2, std3))
 
 def MCEuroExperimentStdHelper(N, path_num, MC_Euro):
     vanilla = []
     anti = []
+    ctrl = []
     for n in range(N):
         np.random.seed(n)
         result1 = MC_Euro.priceV2(path_num)
@@ -96,4 +101,7 @@ def MCEuroExperimentStdHelper(N, path_num, MC_Euro):
         np.random.seed(n)
         result2 = MC_Euro.priceV5(path_num) # antithetic
         anti.append(result2)
-    return np.std(vanilla, ddof=1), np.std(anti, ddof=1)
+        np.random.seed(n)
+        result3 = MC_Euro.priceV7(path_num) # antithetic
+        ctrl.append(result3)
+    return np.std(vanilla, ddof=1), np.std(anti, ddof=1), np.std(ctrl, ddof=1)
