@@ -3,9 +3,12 @@ import scipy as sp
 from scipy.special import erf
 from scipy.stats import norm
 import numpy as np
-import tensorflow as tf
-import tensorflow_probability as tfp
-tfd = tfp.distributions
+try:
+    import tensorflow_probability as tfp
+    tfd = tfp.distributions
+    import tensorflow as tf
+except Exception as e:
+    print("tfp not installed")
 
 
 class GeometricAvg_tf:

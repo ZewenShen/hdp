@@ -17,7 +17,7 @@ class ConvEuro:
         self.cov_mat = (self.vol_vec[np.newaxis].T @ self.vol_vec[np.newaxis]) * corr_mat
         self.price_mat = None
 
-    def price(self, n_vec, L_multiplier=30):
+    def price(self, n_vec, L_multiplier=30, float32=False):
         N_vec = 2**n_vec
         self.N_vec = N_vec
         L_vec = self.vol_vec * self.T**0.5 * L_multiplier
@@ -30,6 +30,14 @@ class ConvEuro:
         else:
             y = (grid - N_vec / 2) * dy
             u = (grid - N_vec / 2) * du
+
+        if float32: 
+            self.S0_vec = self.S0_vec.astype(np.float32, copy=False)
+            self.mu_vec = self.mu_vec.astype(np.float32, copy=False)
+            self.cov_mat = self.cov_mat.astype(np.float32, copy=False)
+            y = y.astype(np.float32, copy=False)
+            u = u.astype(np.float32, copy=False)
+        
         self.y = y
         k_vecs = ConvEuro.iterable_k_vec(N_vec)
         ys = y[np.arange(len(y)), k_vecs]
@@ -38,6 +46,7 @@ class ConvEuro:
         del ys
         
         G = ConvEuro.G(k_vecs, N_vec)
+        if float32: G = G.astype(np.float32, copy=False)
         us = u[np.arange(len(u)), k_vecs]
         del k_vecs
 

@@ -24,7 +24,7 @@ class Test(unittest.TestCase):
         dividend = 0.04
         corr = 0.25
         euro = Digital(strike, init_price_vec, T, ir, vol, dividend, corr, 1)
-        result = FFTConvExperiment(0.45, 2, 7, euro, 10)
+        result = FFTConvExperiment(0.45, 2, 7, euro, 10, True)
         hdpPickle.dump(result, 'FFTconv_rate_5dDig.pickle')
         print(result)
 
@@ -38,7 +38,7 @@ class Test(unittest.TestCase):
         dividend = 0.04
         corr = 0.25
         euro = BasEuro(strike, init_price_vec, T, ir, vol, dividend, corr, 1)
-        result = FFTConvExperiment(1.5, 2, 6, euro, 10)
+        result = FFTConvExperiment(1.5, 2, 6, euro, 10, True)
         hdpPickle.dump(result, 'FFTconv_rate_6dBas.pickle')
         print(result)
 
