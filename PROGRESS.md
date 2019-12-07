@@ -224,3 +224,6 @@ Investigate more closely in the circular convolution. Understand Tensorflow in m
 
 # 11.26
 Thesis: Described three types of low discrepancy methods and their implementations. Completed the gap in "the error bound of the dgm" by proving the BS equation is a parabolic pde. Added the statement of maximum principle. Briefly introduced the architecture of dgm and bsde and compared the two methods.
+
+# 12.3
+Implemented antithetic variates for n-d MC and added the discussion of it to the paper. Figure out the reason why DGM using Hessian is extremely slow: batch size too large. Took error from the boundary conditions of the PDE into consideration.
