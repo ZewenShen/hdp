@@ -3,12 +3,11 @@ DIR_LOC = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(DIR_LOC+"/..")
 from blackscholes.dgm.DGMNet import DGMNet
 from blackscholes.dgm.Hessian import fd_hessian
+from blackscholes.utils.Analytical import GeometricAvg
 from utils.Domain import Sampler1d, SamplerNd, SamplerNdV2
 import utils.Pickle as pickle
 import tensorflow as tf
 import numpy as np
-
-
 
 class EuroV2:
     # Compared with V1, we add the error from the boundary condition.
@@ -23,6 +22,7 @@ class EuroV2:
         self.vol_vec = vol_vec
         self.ir = ir
         self.dividend_vec = dividend_vec
+        self.corr_mat = corr_mat
         self.cov_mat = (self.vol_vec[np.newaxis].T @ self.vol_vec[np.newaxis]) * corr_mat
         self.sampler = sampler if sampler is not None else SamplerNdV2(domain)
 
@@ -108,7 +108,7 @@ class EuroV2:
         V_t = tf.gradients(V, t_interior)[0]
         V_s = tf.gradients(V, S_interior)[0]
         S_mean = tf.reduce_mean(S_interior)
-        if use_fd_hessian:
+        if use_fd_hessian: # deprecated
             V_ss = (fd_hessian(model, S_interior, t_interior, 1.5e-6 * S_mean) + \
                    fd_hessian(model, S_interior, t_interior, 1.5e-7 * S_mean) + \
                    fd_hessian(model, S_interior, t_interior, 1.5e-8 * S_mean)) / 3
@@ -139,6 +139,75 @@ class EuroV2:
             cur_sec_deriv = V_ss_maxboundary[i*boundary_n: (i+1)*boundary_n - 1, i]
             L2max += tf.reduce_mean(tf.math.square(cur_sec_deriv))
         L2max /= self.dim
+                
+        # Loss term #3: initial/terminal condition
+        target_payoff = self.payoff_func(S_terminal)
+        fitted_payoff = tf.reshape(model(S_terminal, t_terminal), [-1])
+        
+        if use_L2_err:
+            L3 = tf.reduce_mean(tf.math.square(fitted_payoff - target_payoff))
+        else:
+            L3 = tf.reduce_mean(tf.math.abs(fitted_payoff - target_payoff))
+        return L1, L2min, L2max, L3
+
+
+class EuroV3(EuroV2):
+    # geometric avg payoff
+    # Change V2's boundary condition to Dirichlet type
+    
+    def loss_func(self, model, S_interior, t_interior, Smin_boundary, tmin_boundary, Smax_boundary,\
+            tmax_boundary, S_terminal, t_terminal, use_fd_hessian, use_L2_err):
+        ''' Compute total loss for training.
+        Note: only geometric avg boundary condition is considered.
+        Args:
+            model:      DGMNet model object
+            t_interior: sampled time points in the interior of the function's domain
+            S_interior: sampled space points in the interior of the function's domain
+            t_terminal: sampled time points at terminal point (vector of terminal times)
+            S_terminal: sampled space points at terminal time
+        ''' 
+        # Loss term #1: PDE
+        # compute function value and derivatives at current sampled points
+        V = model(S_interior, t_interior)
+        V_t = tf.gradients(V, t_interior)[0]
+        V_s = tf.gradients(V, S_interior)[0]
+        S_mean = tf.reduce_mean(S_interior)
+        if use_fd_hessian: # deprecated
+            V_ss = (fd_hessian(model, S_interior, t_interior, 1.5e-6 * S_mean) + \
+                   fd_hessian(model, S_interior, t_interior, 1.5e-7 * S_mean) + \
+                   fd_hessian(model, S_interior, t_interior, 1.5e-8 * S_mean)) / 3
+        else:
+            V_ss = tf.hessians(V, S_interior)[0]
+            V_ss = tf.reduce_sum(V_ss, axis=2)
+
+        cov_Vss = tf.multiply(V_ss, self.cov_mat)
+        sec_ords = tf.map_fn(lambda x: tf.reduce_sum(tf.tensordot(S_interior, x, 1) * S_interior, axis=1) / 2,\
+                    cov_Vss)
+        sec_ord = tf.reduce_sum(sec_ords, axis=1)
+        first_ord = tf.reduce_sum(tf.multiply(tf.multiply(V_s, S_interior), self.ir - self.dividend_vec), axis=1)
+        diff_V = tf.reshape(V_t, [-1]) + sec_ord + first_ord - self.ir * tf.reshape(V, [-1])
+
+        # compute average L2-norm of differential operator
+        L1 = tf.reduce_mean(tf.math.square(diff_V))
+
+        # Loss term #2: boundary condition
+        V_minboundary = model(Smin_boundary, tmin_boundary)
+        real_minboundary = []
+        for i in range(tf.shape(Smin_boundary)[0]):
+            ga = GeometricAvg(self.dim, Smin_boundary[i], self.payoff_func.strike, self.domain.T-tmin_boundary[i],\
+                self.ir, self.vol_vec, self.dividend_vec, self.corr_mat).european_option_price()
+            real_minboundary.append(ga)
+        real_minboundary = np.array(real_minboundary)
+        L2min = tf.reduce_mean(tf.math.square(tf.reshape(V_minboundary, [-1]) - real_minboundary))
+
+        V_maxboundary = model(Smax_boundary, tmax_boundary)
+        real_maxboundary = []
+        for i in range(tf.shape(Smax_boundary)[0]):
+            ga = GeometricAvg(self.dim, Smax_boundary[i], self.payoff_func.strike, self.domain.T-tmax_boundary[i],\
+                self.ir, self.vol_vec, self.dividend_vec, self.corr_mat).european_option_price()
+            real_maxboundary.append(ga)
+        real_maxboundary = np.array(real_maxboundary)
+        L2max = tf.reduce_mean(tf.math.square(tf.reshape(V_maxboundary, [-1]) - real_maxboundary))
                 
         # Loss term #3: initial/terminal condition
         target_payoff = self.payoff_func(S_terminal)

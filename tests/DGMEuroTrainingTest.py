@@ -1,6 +1,6 @@
 import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(__file__))+"/../src")
-from blackscholes.dgm.Euro import Euro1d, Euro, EuroV2
+from blackscholes.dgm.Euro import Euro1d, Euro, EuroV2, EuroV3
 from utils.Domain import Domain1d, Sampler1dBoundary2Center, DomainNd, SamplerNd
 from blackscholes.utils.Type import CallPutType
 import unittest
@@ -62,6 +62,19 @@ class Test(unittest.TestCase):
         np.fill_diagonal(corr_mat, 1.0)
         solver = Euro(payoff_func, domain, vol_vec, ir, dividend_vec, corr_mat)
         solver.run(n_samples=80000, steps_per_sample=1, saved_name="euro_4d_geometric")
+    
+    def test_euroV3_4d_dirichlet(self):
+        dim = 4
+        T = 1.0
+        domain = DomainNd(np.array([[20, 60], [20, 60], [20, 60], [20, 60]], dtype=np.float64), T)
+        vol_vec, ir, dividend_vec, stri = 0.2*np.ones(dim, dtype=np.float64), 0.06, 0.04*np.ones(dim, dtype=np.float64), 40.0
+        payoff_func = lambda x: tf.nn.relu(tf.pow(tf.math.reduce_prod(x, axis=1), 1/dim) - stri)
+        payoff_func.strike = stri
+
+        corr_mat = 0.25 * np.ones((dim, dim), dtype=np.float64)
+        np.fill_diagonal(corr_mat, 1.0)
+        solver = EuroV3(payoff_func, domain, vol_vec, ir, dividend_vec, corr_mat)
+        solver.run(n_samples=80000, steps_per_sample=1, saved_name="euroV3_4d_geometric_diri")
 
     def test_euro1d(self):
         tf.random.set_random_seed(4)
