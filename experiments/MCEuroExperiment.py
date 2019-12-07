@@ -43,9 +43,9 @@ class Test(unittest.TestCase):
         payoff_func = lambda x: np.maximum(strike - np.mean(x, axis=1), np.zeros(len(x)))
         random_walk = GBM(T, 400, init_price_vec, ir, vol_vec, dividend_vec, corr_mat)
         opt = Euro(payoff_func, random_walk)
-        analy = 1.5
+        analy = 1.50600
         np.random.seed(1)
-        result = MCEuroExperiment(analy, 14, 20, opt, "V2")
+        result = MCEuroExperiment(analy, 14, 21, opt, "V2")
         hdpPickle.dump(result, 'MCEuro_6d.pickle')
         print(result)
     
@@ -66,9 +66,9 @@ class Test(unittest.TestCase):
         payoff_func = lambda x: np.maximum(strike - np.mean(x, axis=1), np.zeros(len(x)))
         random_walk = GBM(T, 400, init_price_vec, ir, vol_vec, dividend_vec, corr_mat)
         opt = Euro(payoff_func, random_walk)
-        analy = 0
+        analy = 1.50600
         np.random.seed(1)
-        result = MCEuroExperiment(analy, 20, 27, opt, "V8")
+        result = MCEuroExperiment(analy, 14, 21, opt, "V8")
         hdpPickle.dump(result, 'MCEuro_6d_control_sobol.pickle')
         print(result)
 
@@ -88,9 +88,9 @@ class Test(unittest.TestCase):
         payoff_func = lambda x: np.maximum(strike - np.mean(x, axis=1), np.zeros(len(x)))
         random_walk = GBM(T, 400, init_price_vec, ir, vol_vec, dividend_vec, corr_mat)
         opt = Euro(payoff_func, random_walk)
-        analy = 1.5
+        analy = 1.50600
         np.random.seed(1)
-        result = MCEuroExperiment(analy, 14, 20, opt, "V7")
+        result = MCEuroExperiment(analy, 14, 21, opt, "V7")
         hdpPickle.dump(result, 'MCEuro_6d_control.pickle')
         print(result)
 
@@ -110,9 +110,9 @@ class Test(unittest.TestCase):
         payoff_func = lambda x: np.maximum(strike - np.mean(x, axis=1), np.zeros(len(x)))
         random_walk = GBM(T, 400, init_price_vec, ir, vol_vec, dividend_vec, corr_mat)
         opt = Euro(payoff_func, random_walk)
-        analy = 1.5
+        analy = 1.50600
         np.random.seed(1)
-        result = MCEuroExperiment(analy, 14, 20, opt, "V5")
+        result = MCEuroExperiment(analy, 14, 21, opt, "V5")
         hdpPickle.dump(result, 'MCEuro_6d_Anti.pickle')
         print(result)
 
@@ -132,9 +132,9 @@ class Test(unittest.TestCase):
         payoff_func = lambda x: np.maximum(strike - np.mean(x, axis=1), np.zeros(len(x)))
         random_walk = GBM(T, 400, init_price_vec, ir, vol_vec, dividend_vec, corr_mat)
         opt = Euro(payoff_func, random_walk)
-        analy = 1.5
+        analy = 1.50600
         np.random.seed(1)
-        result = MCEuroExperiment(analy, 14, 20, opt, "V4")
+        result = MCEuroExperiment(analy, 14, 21, opt, "V4")
         hdpPickle.dump(result, 'MCEuro_6d_Sobol.pickle')
         print(result)
 
