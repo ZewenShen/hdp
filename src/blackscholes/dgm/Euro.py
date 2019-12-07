@@ -3,7 +3,7 @@ DIR_LOC = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(DIR_LOC+"/..")
 from blackscholes.dgm.DGMNet import DGMNet
 from blackscholes.dgm.Hessian import fd_hessian
-from blackscholes.utils.Analytical import GeometricAvg
+from blackscholes.utils.Analytical import GeometricAvg_tf
 from utils.Domain import Sampler1d, SamplerNd, SamplerNdV2
 import utils.Pickle as pickle
 import tensorflow as tf
@@ -192,12 +192,12 @@ class EuroV3(EuroV2):
 
         # Loss term #2: boundary condition
         V_minboundary = model(Smin_boundary, tmin_boundary)
-        real_minboundary = tf.map_fn(lambda x: GeometricAvg(self.dim, x[:-1], self.payoff_func.strike, self.domain.T-x[-1],\
+        real_minboundary = tf.map_fn(lambda x: GeometricAvg_tf(self.dim, x[:-1], self.payoff_func.strike, self.domain.T-x[-1],\
                 self.ir, self.vol_vec, self.dividend_vec, self.corr_mat).european_option_price(), tf.concat([Smin_boundary, tmin_boundary], 1))
         L2min = tf.reduce_mean(tf.math.square(tf.reshape(V_minboundary, [-1]) - real_minboundary))
 
         V_maxboundary = model(Smax_boundary, tmax_boundary)
-        real_maxboundary = tf.map_fn(lambda x: GeometricAvg(self.dim, x[:-1], self.payoff_func.strike, self.domain.T-x[-1],\
+        real_maxboundary = tf.map_fn(lambda x: GeometricAvg_tf(self.dim, x[:-1], self.payoff_func.strike, self.domain.T-x[-1],\
                 self.ir, self.vol_vec, self.dividend_vec, self.corr_mat).european_option_price(), tf.concat([Smax_boundary, tmax_boundary], 1))
         L2max = tf.reduce_mean(tf.math.square(tf.reshape(V_maxboundary, [-1]) - real_maxboundary))
                 

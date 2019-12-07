@@ -3,8 +3,11 @@ import scipy as sp
 from scipy.special import erf
 from scipy.stats import norm
 import numpy as np
+import tensorflow as tf
+import tensorflow_probability as tfp
 
-class GeometricAvg:
+
+class GeometricAvg_tf:
     
     def __init__(self, dim, spot, strike, T, ir, vol_vec, dividend, corr_mat):
         self.spot = spot
@@ -25,6 +28,35 @@ class GeometricAvg:
 
     def european_option_price(self):
         sigma = (self.vol_vec @ self.corr_mat @ self.vol_vec)**0.5 / self.dim
+        F = tf.math.reduce_prod(self.spot)**(1/self.dim) *\
+             tf.math.exp((self.ir - self.dividend - tf.math.reduce_prod(self.vol_vec**2)/(2*self.dim) + sigma**2/2)*self.T)
+        d1 = (tf.math.log(F/self.strike) + sigma**2*self.T/2)/(sigma*self.T**0.5)
+        d2 = d1 - sigma * self.T**0.5
+        return tf.math.exp(-self.ir * self.T) * (F * norm.cdf(d1) - self.strike * tfp.bijectors.NormalCDF(d2))
+
+
+class GeometricAvg:
+    
+    def __init__(self, dim, spot, strike, T, ir, vol_vec, dividend, corr_mat):
+        self.spot = spot
+        self.strike = strike
+        self.T = T
+        self.ir = ir
+        if isinstance(vol_vec, float):
+            self.vol_vec = vol_vec * np.ones(dim)
+        else:
+            self.vol_vec = vol_vec
+        self.dim = dim
+        self.dividend = dividend
+        if isinstance(corr_mat, float):
+            self.corr_mat = np.full((dim, dim), corr_mat)
+            np.fill_diagonal(self.corr_mat, 1)
+        else:
+            self.corr_mat = corr_mat
+        self.sigma = (self.vol_vec @ self.corr_mat @ self.vol_vec)**0.5 / self.dim
+
+    def european_option_price(self):
+        sigma = self.sigma
         F = np.prod(self.spot)**(1/self.dim) *\
              np.exp((self.ir - self.dividend - np.sum(self.vol_vec**2)/(2*self.dim) + sigma**2/2)*self.T)
         d1 = (np.log(F/self.strike) + sigma**2*self.T/2)/(sigma*self.T**0.5)
