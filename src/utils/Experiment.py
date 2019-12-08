@@ -54,6 +54,22 @@ def FFTConvExperiment(analytical_sol, n_start, n_end, FFT_Euro, L_multiplier=30,
         times.append(end - start)
     return ExperimentResult(r, N, results, times, errors, analytical_sol)
 
+def FFTConvDeltaExperiment(analytical_sol, n_start, n_end, FFT_Euro, L_multiplier=30, float32=False):
+    results = []
+    errors = []
+    times = []
+    r = range(n_start, n_end)
+    N = 2**np.array(r)
+    for i in r:
+        start = timer()
+        FFT_Euro.price(i * np.ones(FFT_Euro.dim, dtype=int), L_multiplier, float32)
+        end = timer()
+        deltas, gammas = FFT_Euro.greeks()
+        results.append(deltas[0])
+        errors.append(abs(deltas[0] - analytical_sol))
+        times.append(end - start)
+    return ExperimentResult(r, N, results, times, errors, analytical_sol)
+
 def MCEuroExperiment(analytical_sol, n_start, n_end, MC_Euro, func_ver):
     results = []
     errors = []

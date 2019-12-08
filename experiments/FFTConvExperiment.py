@@ -3,7 +3,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__))+"/../src")
 from blackscholes.fft.Conv import ConvEuro
 from blackscholes.fft.GeometricAvg import Euro as GAEuro
 from blackscholes.fft.Basket import Euro as BasEuro, Digital
-from utils.Experiment import FFTConvExperiment
+from utils.Experiment import FFTConvExperiment, FFTConvDeltaExperiment
 import utils.Pickle as hdpPickle
 from blackscholes.utils.Analytical import GeometricAvg as AnalyticalGA, Analytical_Sol as Ana1d
 
@@ -13,6 +13,21 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 class Test(unittest.TestCase):
+
+    def test_delta_4d(self):
+        dim = 4
+        T = 1
+        strike = 40
+        init_price_vec = np.full(4, 40, dtype=np.float64)
+        vol = 0.2
+        ir = 0.06
+        dividend = 0.04
+        corr = 0.25
+        euro = GAEuro(strike, init_price_vec, T, ir, vol, dividend, corr, 1)
+        analy = AnalyticalGA(dim, init_price_vec, strike, T, ir, vol, dividend, corr).delta()
+        result = FFTConvDeltaExperiment(analy[0], 3, 8, euro, 10)
+        hdpPickle.dump(result, 'FFTconv_delta_4dGA.pickle')
+        print(result)
 
     def test_conv_rate_5dDig(self):
         dim = 6
