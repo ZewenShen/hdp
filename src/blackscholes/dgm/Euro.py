@@ -26,8 +26,8 @@ class EuroV2:
         self.cov_mat = (self.vol_vec[np.newaxis].T @ self.vol_vec[np.newaxis]) * corr_mat
         self.sampler = sampler if sampler is not None else SamplerNdV2(domain)
 
-    def run(self,  n_samples, steps_per_sample, n_layers=3, layer_width=50, n_interior=32,\
-            n_boundary=32, n_terminal=32, saved_name=None, use_fd_hessian=False, use_L2_err=True):
+    def run(self, n_samples, steps_per_sample, n_layers=3, layer_width=50, n_interior=16,\
+            n_boundary=16, n_terminal=32, saved_name=None, use_fd_hessian=False, use_L2_err=True):
         if not saved_name:
             pickle_dir = DIR_LOC+"/saved_models/{}_Euro".format(time.strftime("%Y%m%d"))
             saved_name = "{}_Euro.ckpt".format(time.strftime("%Y%m%d"))
@@ -51,7 +51,7 @@ class EuroV2:
         loss_tnsr = L1_tnsr + L2min_tnsr + L2max_tnsr + L3_tnsr
 
         global_step = tf.Variable(0, trainable=False)
-        boundaries = [5000, 10000, 20000, 30000, 40000, 45000]
+        boundaries = [50000, 70000, 100000, 130000, 150000, 200000]
         values = [1e-4, 5e-5, 1e-5, 5e-6, 1e-6, 5e-7, 1e-7]
         learning_rate = tf.train.piecewise_constant(global_step, boundaries, values)
         optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss_tnsr)
@@ -76,7 +76,59 @@ class EuroV2:
             model_saver.save(sess, DIR_LOC+"/saved_models/"+saved_name)
         pickle.dump(self.loss_vec, pickle_dir+"_lossvec.pickle")
         pickle.dump(self.L1_vec, pickle_dir+"_l1vec.pickle")
-        # pickle.dump(self.L2_vec, pickle_dir+"_l2vec.pickle")
+        pickle.dump(self.L2min_vec, pickle_dir+"_l2minvec.pickle")
+        pickle.dump(self.L2max_vec, pickle_dir+"_l2maxvec.pickle")
+        pickle.dump(self.L3_vec, pickle_dir+"_l3vec.pickle")
+
+    def trainAgain(self, saved_name, n_samples, steps_per_sample, n_layers=3, layer_width=50, n_interior=32, n_boundary=32, n_terminal=32):
+        if not saved_name:
+            pickle_dir = DIR_LOC+"/saved_models/{}_Euro".format(time.strftime("%Y%m%d"))
+            saved_name = "{}_Euro.ckpt".format(time.strftime("%Y%m%d"))
+        else:
+            pickle_dir = DIR_LOC+"/saved_models/{}_{}".format(time.strftime("%Y%m%d"), saved_name)
+            saved_name = time.strftime("%Y%m%d") + "_" + saved_name + ".ckpt"
+        self.model = DGMNet(n_layers, layer_width, input_dim=self.dim)
+        S_interior_tnsr = tf.placeholder(tf.float64, [None, self.dim])
+        t_interior_tnsr = tf.placeholder(tf.float64, [None, 1])
+        Smin_boundary_tnsr = tf.placeholder(tf.float64, [None, self.dim])
+        tmin_boundary_tnsr = tf.placeholder(tf.float64, [None, 1])
+        Smax_boundary_tnsr = tf.placeholder(tf.float64, [None, self.dim])
+        tmax_boundary_tnsr = tf.placeholder(tf.float64, [None, 1])
+        S_terminal_tnsr = tf.placeholder(tf.float64, [None, self.dim])
+        t_terminal_tnsr = tf.placeholder(tf.float64, [None, 1])
+        L1_tnsr, L2min_tnsr, L2max_tnsr, L3_tnsr = self.loss_func(self.model, S_interior_tnsr, t_interior_tnsr,\
+            Smin_boundary_tnsr, tmin_boundary_tnsr, Smax_boundary_tnsr, tmax_boundary_tnsr,\
+            S_terminal_tnsr, t_terminal_tnsr, False, True)
+        loss_tnsr = L1_tnsr + L2min_tnsr + L2max_tnsr + L3_tnsr
+
+        global_step = tf.Variable(0, trainable=False)
+        boundaries = [50000, 70000, 100000, 130000, 150000, 200000]
+        values = [1e-4, 5e-5, 1e-5, 5e-6, 1e-6, 5e-7, 1e-7]
+        learning_rate = tf.train.piecewise_constant(global_step, boundaries, values)
+        optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss_tnsr)
+
+        model_saver = tf.train.Saver()
+        self.loss_vec, self.L1_vec, self.L2min_vec, self.L2max_vec, self.L3_vec = [], [], [], [], []
+        with tf.Session() as sess:
+            sess.run(tf.global_variables_initializer())
+            for i in range(n_samples):
+                S_interior, t_interior, Smin_boundarys, tmin_boundarys, Smax_boundarys,\
+                    tmax_boundarys, S_terminal, t_terminal = self.sampler.run(n_interior, n_boundary, n_terminal)
+                for _ in range(steps_per_sample):
+                    loss, L1, L2min, L2max, L3, _ = sess.run([loss_tnsr, L1_tnsr, L2min_tnsr, L2max_tnsr,\
+                        L3_tnsr, optimizer],\
+                        feed_dict={S_interior_tnsr: S_interior, t_interior_tnsr: t_interior,\
+                                   Smin_boundary_tnsr: Smin_boundarys, tmin_boundary_tnsr: tmin_boundarys,\
+                                   Smax_boundary_tnsr: Smax_boundarys, tmax_boundary_tnsr: tmax_boundarys,\
+                                   S_terminal_tnsr: S_terminal, t_terminal_tnsr: t_terminal})
+                self.loss_vec.append(loss); self.L1_vec.append(L1); self.L3_vec.append(L3)
+                self.L2min_vec.append(L2min); self.L2max_vec.append(L2max)
+                print("Iteration {}: Loss: {}; L1: {}; L2min: {}; L2max: {}; L3: {}".format(i, loss, L1, L2min, L2max, L3))
+            model_saver.save(sess, DIR_LOC+"/saved_models/"+saved_name)
+        pickle.dump(self.loss_vec, pickle_dir+"_lossvec.pickle")
+        pickle.dump(self.L1_vec, pickle_dir+"_l1vec.pickle")
+        pickle.dump(self.L2min_vec, pickle_dir+"_l2minvec.pickle")
+        pickle.dump(self.L2max_vec, pickle_dir+"_l2maxvec.pickle")
         pickle.dump(self.L3_vec, pickle_dir+"_l3vec.pickle")
 
     def restore(self, S, t, saved_name, n_layers=3, layer_width=50):
