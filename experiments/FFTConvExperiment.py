@@ -66,20 +66,14 @@ class Test(unittest.TestCase):
         call, _ = Ana1d(spot, strike, T, ir, vol).european_option_price()
         payoff_func = lambda x: np.maximum(x - strike, 0)
         conv = ConvEuro(payoff_func, spot*np.ones(1), T, ir, vol*np.ones(1), np.zeros(1), np.eye(1))
-        result = FFTConvExperiment(call[0], 18, 19, conv, 10)
+        result = FFTConvExperiment(call[0], 7, 8, conv, 10)
         print(result)
         grid, pri = conv.get_all_price()
         call, _ = Ana1d(grid.flatten(), strike, T, ir, vol).european_option_price()
-        errors = pri - call
-        plt.plot(grid.flatten(), call, marker='.')
-        plt.plot(grid.flatten(), pri, marker='.')
-        # plt.plot(grid.flatten(), np.abs(conv.fp), marker='.')
-        # plt.plot(grid.flatten(), np.angle(conv.fp), marker='.')
-
-        # plt.plot(grid.flatten(), conv.ivg, marker='.')
-        # plt.plot(grid.flatten(), conv.vg, marker='.')
-        plt.plot(spot, 0, marker='o')
-        plt.plot(strike, 0, marker='8')
+        plt.plot(grid.flatten()[::5], call[::5], '--.', grid.flatten()[::5], pri[::5], '--.')
+        plt.plot(spot, 14.296, 'o')
+        plt.legend(['Analytical solution', 'Approximation', 'centre of the log space'])
+        plt.savefig("conv1d.png", dpi=1500)
         plt.show()
         
 
