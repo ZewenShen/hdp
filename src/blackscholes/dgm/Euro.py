@@ -159,8 +159,8 @@ class EuroV2:
         V = model(S_interior, t_interior)
         V_t = tf.gradients(V, t_interior)[0]
         V_s = tf.gradients(V, S_interior)[0]
-        S_mean = tf.reduce_mean(S_interior)
         if use_fd_hessian: # deprecated
+            S_mean = tf.reduce_mean(S_interior)
             V_ss = (fd_hessian(model, S_interior, t_interior, 1.5e-6 * S_mean) + \
                    fd_hessian(model, S_interior, t_interior, 1.5e-7 * S_mean) + \
                    fd_hessian(model, S_interior, t_interior, 1.5e-8 * S_mean)) / 3
@@ -169,9 +169,8 @@ class EuroV2:
             V_ss = tf.reduce_sum(V_ss, axis=2)
 
         cov_Vss = tf.multiply(V_ss, self.cov_mat)
-        sec_ords = tf.map_fn(lambda x: tf.reduce_sum(tf.tensordot(S_interior, x, 1) * S_interior, axis=1) / 2,\
-                    cov_Vss)
-        sec_ord = tf.reduce_sum(sec_ords, axis=1)
+        sec_ord = tf.map_fn(lambda i: tf.tensordot(S_interior[i], tf.linalg.matvec(cov_Vss[i], S_interior[i]), 1) / 2,\
+                  tf.range(tf.shape(S_interior)[0]), dtype=tf.float64)
         first_ord = tf.reduce_sum(tf.multiply(tf.multiply(V_s, S_interior), self.ir - self.dividend_vec), axis=1)
         diff_V = tf.reshape(V_t, [-1]) + sec_ord + first_ord - self.ir * tf.reshape(V, [-1])
 
@@ -233,9 +232,8 @@ class EuroV3(EuroV2):
             V_ss = tf.reduce_sum(V_ss, axis=2)
 
         cov_Vss = tf.multiply(V_ss, self.cov_mat)
-        sec_ords = tf.map_fn(lambda x: tf.reduce_sum(tf.tensordot(S_interior, x, 1) * S_interior, axis=1) / 2,\
-                    cov_Vss)
-        sec_ord = tf.reduce_sum(sec_ords, axis=1)
+        sec_ord = tf.map_fn(lambda i: tf.tensordot(S_interior[i], tf.linalg.matvec(cov_Vss[i], S_interior[i]), 1) / 2,\
+                  tf.range(tf.shape(S_interior)[0]), dtype=tf.float64)
         first_ord = tf.reduce_sum(tf.multiply(tf.multiply(V_s, S_interior), self.ir - self.dividend_vec), axis=1)
         diff_V = tf.reshape(V_t, [-1]) + sec_ord + first_ord - self.ir * tf.reshape(V, [-1])
 
@@ -350,7 +348,7 @@ class Euro:
         V_t = tf.gradients(V, t_interior)[0]
         V_s = tf.gradients(V, S_interior)[0]
         S_mean = tf.reduce_mean(S_interior)
-        if use_fd_hessian:
+        if use_fd_hessian: # deprecated
             V_ss = (fd_hessian(model, S_interior, t_interior, 1.5e-6 * S_mean) + \
                    fd_hessian(model, S_interior, t_interior, 1.5e-7 * S_mean) + \
                    fd_hessian(model, S_interior, t_interior, 1.5e-8 * S_mean)) / 3
@@ -359,9 +357,8 @@ class Euro:
             V_ss = tf.reduce_sum(V_ss, axis=2)
 
         cov_Vss = tf.multiply(V_ss, self.cov_mat)
-        sec_ords = tf.map_fn(lambda x: tf.reduce_sum(tf.tensordot(S_interior, x, 1) * S_interior, axis=1) / 2,\
-                    cov_Vss)
-        sec_ord = tf.reduce_sum(sec_ords, axis=1)
+        sec_ord = tf.map_fn(lambda i: tf.tensordot(S_interior[i], tf.linalg.matvec(cov_Vss[i], S_interior[i]), 1) / 2,\
+                  tf.range(tf.shape(S_interior)[0]), dtype=tf.float64)
         first_ord = tf.reduce_sum(tf.multiply(tf.multiply(V_s, S_interior), self.ir - self.dividend_vec), axis=1)
         diff_V = tf.reshape(V_t, [-1]) + sec_ord + first_ord - self.ir * tf.reshape(V, [-1])
 

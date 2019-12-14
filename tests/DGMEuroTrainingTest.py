@@ -18,7 +18,7 @@ class Test(unittest.TestCase):
         corr_mat = 0.25 * np.ones((dim, dim), dtype=np.float64)
         np.fill_diagonal(corr_mat, 1)
         solver = Euro(payoff_func, domain, vol_vec, ir, dividend_vec, corr_mat)
-        solver.run(n_samples=2000, steps_per_sample=5, n_interior=3, n_terminal=3)
+        solver.run(n_samples=2000, steps_per_sample=1, n_interior=8, n_terminal=8)
 
     def test_euro2d(self):
         dim = 2
