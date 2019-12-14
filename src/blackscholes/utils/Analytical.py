@@ -36,10 +36,8 @@ class GeometricAvg_tf:
              tf.math.exp((self.ir - self.dividend - tf.math.reduce_sum(self.vol_vec**2)/(2*self.dim) + sigma**2/2)*self.T)
         d1 = (tf.math.log(F/self.strike) + sigma**2*self.T/2)/(sigma*self.T**0.5)
         d2 = d1 - sigma * self.T**0.5
-        norm = tfd.Normal(0., 1.)
-        c1 = tf.dtypes.cast(norm.cdf(tf.dtypes.cast(d1, tf.float32)), tf.float64)
-        c2 = tf.dtypes.cast(norm.cdf(tf.dtypes.cast(d2, tf.float32)), tf.float64)
-        return tf.math.exp(-self.ir * self.T) * (F * c1 - self.strike * c2)
+        normal = tfd.Normal(tf.constant(0., dtype=tf.float64), tf.constant(1., dtype=tf.float64))
+        return tf.math.exp(-self.ir * self.T) * (F * normal.cdf(d1) - self.strike * normal.cdf(d2))
 
 class GeometricAvg:
     
