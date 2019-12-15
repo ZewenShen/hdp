@@ -1,6 +1,6 @@
 import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(__file__))+"/../src")
-from blackscholes.dgm.Euro import Euro1d, Euro, EuroV2
+from blackscholes.dgm.Euro import Euro1d, Euro, EuroV2, EuroV3
 from utils.Domain import Domain1d, DomainNd
 from blackscholes.utils.Type import CallPutType
 from blackscholes.utils.Analytical import Analytical_Sol, GeometricAvg
@@ -10,6 +10,24 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 
 class Test(unittest.TestCase):
+
+    def test_euroV3_restore(self):
+        model_name = "euroV3_4d_geometric_diri395405_80k"
+        T, dim = 1, 4
+        domain = DomainNd(np.array([[39.5, 40.5], [39.5, 40.5], [39.5, 40.5], [39.5, 40.5]], dtype=np.float64), T)
+        vol_vec, ir, dividend_vec, strike = 0.1*np.ones(dim, dtype=np.float64), 0.03, 0.01*np.ones(dim, dtype=np.float64), 40.0
+        corr_mat = 0.25 * np.ones((dim, dim), dtype=np.float64)
+        np.fill_diagonal(corr_mat, 1)
+        S = np.array([[40, 40, 40, 40], [40.5, 40.5, 40.5, 40.5], [39.5, 39.5, 39.5, 39.5],\
+                      [40, 40, 40, 40], [40.5, 40.5, 40.5, 40.5], [39.5, 39.5, 39.5, 39.5]], dtype=np.float64)
+        t = np.array([[0], [0], [0], [T], [T], [T]], dtype=np.float64)
+        self.restore_helper_geometricV3(S, t, model_name, dim, T, domain, vol_vec, ir, dividend_vec, strike, corr_mat)
+
+    def restore_helper_geometricV3(self, S, t, model_name, dim, T, domain, vol_vec, ir, dividend_vec, strike, corr_mat):
+        payoff_func = lambda x: tf.nn.relu(tf.pow(tf.math.reduce_prod(x, axis=1), 1/dim) - strike)
+        solver = EuroV3(payoff_func, domain, vol_vec, ir, dividend_vec, corr_mat)
+        fitted = solver.restore(S, t, model_name)
+        print(fitted)
 
     def test_euroV2_restore(self):
         model_name = "euroV2_2d_geometric"
