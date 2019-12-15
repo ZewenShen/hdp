@@ -16,7 +16,7 @@ Carr & Madan algorithm; N-d Conv method
 N-d antithetic variates; N-d control variates; N-d Sobol sequence; 1-d importance sampling; N-d Least square Monte Carlo
 
 #### PDE (~/src/blackscholes/pde)
-An efficient 1-d parabolic PDE solver with Dirichlet boundary condition. 1-d American option PDE solver; An untested 2-d parabolic PDE solver with Dirichlet boundary condition on a rectangle domain
+1-d parabolic PDE solver with Dirichlet boundary condition; 1-d American option PDE solver (PSOR / penalty method); 2-d parabolic PDE solver with Dirichlet boundary condition on a rectangle domain (untested)
 
 #### Micellaneous (~/src/utils, ~/src/blackscholes/utils)
 The analytical solution to 1-d European option and N-d geometric average payoff European option; Helper functions for conducting numerical experiments
