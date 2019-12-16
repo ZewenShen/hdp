@@ -6,6 +6,7 @@ import unittest
 import numpy as np
 
 class Test(unittest.TestCase):
+
     def setUp(self):
         strike = 1
         asset_num = 1
@@ -21,7 +22,8 @@ class Test(unittest.TestCase):
         
     def test_price1d(self):
         np.random.seed(444)
-        assert abs(self.opt1.price(3000) - 0.07166975828681604) < 0.00000000000001
+        price = self.opt1.price(3000)
+        assert abs(price - 0.07187167189125372) < 1e-10
 
     def test_price2d(self):
         np.random.seed(555)
