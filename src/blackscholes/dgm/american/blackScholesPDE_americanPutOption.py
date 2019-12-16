@@ -6,10 +6,10 @@
 import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(__file__))+"/../../..")
 from blackscholes.pde.American import Amer1d
+from utils.Domain import Domain1d
 import DGM
 import tensorflow as tf
 import numpy as np
-import scipy.stats as spstats
 import matplotlib.pyplot as plt
 
 #%% Parameters 
@@ -25,9 +25,12 @@ S0 = 50            # Initial price
 t_low = 0 + 1e-10    # time lower bound
 S_low = 0.0 + 1e-10  # spot price lower bound
 S_high = 2*K         # spot price upper bound
+domain = Domain1d(0, S_high, T)
+pde_solver = Amer1d(domain, sigma, r, 0, K, -1)
 
 # Finite difference parameters
-Nsteps = 10000
+Ngrids = 2000
+Nsteps = 500
 
 # neural network parameters
 num_layers = 3
@@ -39,7 +42,7 @@ sampling_stages  = 2000   # number of times to resample new time-space domain po
 steps_per_sample = 10    # number of SGD steps to take before re-sampling
 
 # Sampling parameters
-nSim_interior = 1000
+nSim_interior = 2000
 nSim_terminal = 100
 S_multiplier  = 1.5   # multiplier for oversampling i.e. draw S from [S_low, S_high * S_multiplier]
 
@@ -51,70 +54,6 @@ saveOutput = False
 saveName   = 'BlackScholes_AmericanPut'
 saveFigure = True
 figureName = 'BlackScholes_AmericanPut'
-
-#%% Black-Scholes American put price (using finite differences)
-
-def AmericanPutFD(S0, K, T, sigma, r, Nsteps):
-    ''' American put option price under Black-Scholes model using finite differences
-        Adapted from MATLAB code by Sebastian Jaimungal.
-    
-    Args:
-        S0:     spot price
-        K:      strike price
-        r:      risk-free interest rate
-        sigma:  volatility
-        t:      time
-        Nsteps: number of time steps for discretization 
-    ''' 
-     
-    # time grid
-    dt = T/Nsteps
-    t = np.arange(0, T+dt, dt)
-    
-    # some useful constants
-    dx = sigma*np.sqrt(3*dt)
-    alpha = 0.5*sigma**2*dt/(dx)**2
-    beta = (r-0.5*sigma**2)*dt/(2*dx)
-    
-    # log space grid
-    x_max =  np.ceil(10*sigma*np.sqrt(T)/dx)*dx;
-    x_min =  - np.ceil(10*sigma*np.sqrt(T)/dx)*dx;
-    x = np.arange(x_min, x_max + dx, dx)
-    Ndx = len(x)-1
-    x_int = np.arange(1,Ndx)       
-    
-    # American option price grid
-    h = np.nan * np.ones([Ndx+1, Nsteps+1])        # put price at each time step
-    h[:,-1] = np.maximum(K - S0 * np.exp(x) , 0)   # set payoff at maturity
-    hc = np.nan * np.ones(Ndx+1)
-    
-    S = S0*np.exp(x);
-    
-    # optimal exercise boundary
-    exer_bd = np.ones(Nsteps+1) * np.nan  
-    exer_bd[-1] = K
-
-    # step backwards through time
-    for n in np.arange(Nsteps,0,-1):
-               
-        # compute continuation values
-        hc[x_int] =  h[x_int,n] - r*dt* h[x_int,n] + beta *(h[x_int+1,n] - h[x_int-1,n]) + alpha*(h[x_int+1,n] -2*h[x_int,n] + h[x_int-1,n])
-        hc[0] = 2*hc[1] - hc[2]
-        hc[Ndx] = 2*hc[Ndx-1] - hc[Ndx-2]
-        
-        # compare with intrinsic values      
-        exer_val = K - S
-        h[:,n-1] = np.maximum( hc, exer_val );
-
-        # determine optimal exercise boundaries
-        checkIdx = (hc > exer_val)*1
-        idx = checkIdx.argmax() - 1
-        if max(checkIdx) > 0:
-            exer_bd[n-1] = S[idx]
-  
-    putPrice = h 
-    
-    return (t, S, putPrice, exer_bd)
 
 #%% Sampling function - randomly sample time-space pairs 
 
@@ -241,30 +180,29 @@ plt.figure(figsize = (12,10))
 
 # time values at which to examine density
 # valueTimes = [t_low, T/3, 2*T/3, T]
-valueTimes = [0, 0.3333, 0.6667, 1]
+valueTimes = [0, 0.333, 0.667, 1]
 
 # vector of t and S values for plotting
 S_plot = np.linspace(S_low, S_high, n_plot)
 
 # solution using finite differences
-(t, S, price, exer_bd) = AmericanPutFD(S0, K, T, sigma, r, Nsteps)
-S_idx = S < S_high
-t_idx = [0, 3333, 6667, Nsteps]
+price = pde_solver.solve(Ngrids, Nsteps)
+t_idx = [0, Nsteps//3, 2*Nsteps//3, Nsteps]
 
 for i, curr_t in enumerate(valueTimes):
     
     # specify subplot
-    plt.subplot(2,2,i+1)
+    plt.subplot(2, 2, i+1)
     
     # simulate process at current t 
-    americanOptionValue = price[S < S_high, t_idx[i]]
+    americanOptionValue = price[t_idx[3 - i]]
     
     # compute normalized density at all x values to plot and current t value
     t_plot = curr_t * np.ones_like(S_plot.reshape(-1,1))
     fitted_optionValue = sess.run([V], feed_dict= {t_interior_tnsr:t_plot, S_interior_tnsr:S_plot.reshape(-1,1)})
     
     # plot histogram of simulated process values and overlay estimated density
-    plt.plot(S[S_idx], americanOptionValue, color = 'b', label='Finite differences', linewidth = 3, linestyle=':')
+    plt.plot(np.linspace(0, S_high, Ngrids+1), americanOptionValue, color = 'b', label='Finite differences', linewidth = 3, linestyle=':')
     plt.plot(S_plot, fitted_optionValue[0], color = 'r', label='DGM estimate')    
     
     # subplot options
@@ -288,16 +226,15 @@ if saveFigure:
     
 #%% Exercise boundary heatmap plot 
 # vector of t and S values for plotting
-S_plot = np.linspace(S_low, S_high, n_plot)    
+S_plot = np.linspace(S_low, S_high, n_plot)
 t_plot = np.linspace(t_low, T, n_plot)
 
 # compute European put option value for eact (t,S) pair
-europeanOptionValue_mesh = np.zeros([n_plot, n_plot])
+americanOptionValue_mesh = np.zeros([n_plot, n_plot])
 
 for i in range(n_plot):
     for j in range(n_plot):
-    
-        europeanOptionValue_mesh[j,i] = BlackScholesPut(S_plot[j], K, r, sigma, t_plot[i])
+        americanOptionValue_mesh[j, i] = pde_solver.evaluate(S_plot[j], T - t_plot[i])
     
 # compute model-implied American put option value for eact (t,S) pair
 t_mesh, S_mesh = np.meshgrid(t_plot, S_plot)
@@ -313,8 +250,8 @@ optionValue_mesh = np.reshape(optionValue, [n_plot, n_plot])
 plt.figure()
 plt.figure(figsize = (8,6))
 
-plt.pcolormesh(t_mesh, S_mesh, np.abs(optionValue_mesh - europeanOptionValue_mesh), cmap = "rainbow")
-plt.plot(t, exer_bd, color = 'r', linewidth = 3)
+plt.pcolormesh(t_mesh, S_mesh, np.abs(optionValue_mesh - americanOptionValue_mesh), cmap = "rainbow")
+# plt.plot(t, exer_bd, color = 'r', linewidth = 3)
 
 # plot options
 plt.colorbar()
