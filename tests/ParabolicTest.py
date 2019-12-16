@@ -21,6 +21,17 @@ class Test(unittest.TestCase):
         approx_put = solver.evaluate(spot, T)
         assert abs(approx_put - 14.673851326644733) < 1e-10
 
+    def test_Amer1d_2(self):
+        T = 1
+        domain = Domain1d(0, 300, T)
+        vol, ir, dividend, strike = 0.5, 0.05, 0, 50
+        solver = Amer1d(domain, vol, ir, dividend, strike, CallPutType.PUT)
+        spot = 50
+        solver.solve(1500, 600)
+        approx_put = solver.evaluate(spot, T)
+        print(approx_put)
+        assert abs(approx_put - 8.723336355455928) < 1e-10
+
     def test_Euro1d(self):
         T = 1
         domain = Domain1d(0, 6, T)
