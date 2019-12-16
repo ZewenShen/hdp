@@ -78,7 +78,9 @@ def MCEuroExperiment(analytical_sol, n_start, n_end, MC_Euro, func_ver):
     N = 2**np.array(r)
     for n in N:
         start = timer()
-        if func_ver == "V2":
+        if func_ver == "V1":
+            result = MC_Euro.price(n)
+        elif func_ver == "V2":
             result = MC_Euro.priceV2(n)
         elif func_ver == "V4": # sobol
             result = MC_Euro.priceV4(n)
