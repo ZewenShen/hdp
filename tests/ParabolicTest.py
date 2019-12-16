@@ -2,6 +2,7 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(__file__))+"/../src")
 from blackscholes.pde.Parabolic import Solver1d, Coef2d, Solver2d
 from blackscholes.pde.Euro import Euro1d
+from blackscholes.pde.American import Amer1d
 from blackscholes.utils.Analytical import Analytical_Sol, GeometricAvg
 from utils.Domain import Domain1d, Domain2d
 from blackscholes.utils.Type import CallPutType
@@ -9,6 +10,16 @@ import unittest
 import numpy as np
 
 class Test(unittest.TestCase):
+
+    def test_Amer1d(self):
+        T = 0.25
+        domain = Domain1d(0, 600, T)
+        vol, ir, dividend, strike = 0.8, 0.1, 0, 100
+        solver = Amer1d(domain, vol, ir, dividend, strike, CallPutType.PUT)
+        spot = 100
+        solver.solve(600, 200)
+        approx_put = solver.evaluate(spot, T)
+        assert abs(approx_put - 14.673851326644733) < 1e-10
 
     def test_Euro1d(self):
         T = 1
