@@ -26,8 +26,8 @@ class Test(unittest.TestCase):
             return max(strike - np.sum(l), 0)
         opt = American(test_payoff, random_walk)
         analy = 8.723336355455928
-        result = MCEuroExperiment(analy, 10, 14, opt, "V1")
         np.random.seed(1)
+        result = MCEuroExperiment(analy, 10, 17, opt, "V1")
         hdpPickle.dump(result, 'MCAmer_1d.pickle')
         print(result)
 

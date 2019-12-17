@@ -40,7 +40,7 @@ class Solver1d:
         return solution
     
     def evaluate(self, X, t):
-        t_index = round(t/self.ht)
+        t_index = int(round(t/self.ht))
         domain = np.linspace(self.domain.a, self.domain.b, self.nx+1)
         f = interpolate.interp1d(domain, self.solution[t_index], 'cubic')
         return f(X)
