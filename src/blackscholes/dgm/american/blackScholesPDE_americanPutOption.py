@@ -12,6 +12,7 @@ import DGM
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
+from timeit import default_timer as timer
 
 #%% Parameters 
 
@@ -39,13 +40,13 @@ nodes_per_layer = 50
 learning_rate = 0.001
 
 # Training parameters
-sampling_stages  = 2000   # number of times to resample new time-space domain points
+sampling_stages  = 3000   # number of times to resample new time-space domain points
 steps_per_sample = 10    # number of SGD steps to take before re-sampling
 
 # Sampling parameters
 nSim_interior = 2000
 nSim_terminal = 100
-S_multiplier  = 1.5   # multiplier for oversampling i.e. draw S from [S_low, S_high * S_multiplier]
+S_multiplier  = 1.1   # multiplier for oversampling i.e. draw S from [S_low, S_high * S_multiplier]
 
 # Plot options
 n_plot = 100  # Points on plot grid for each dimension
@@ -154,6 +155,7 @@ sess.run(init_op)
 #%% Train network
 # for each sampling stage
 loss_vec, L1_vec, L2_vec, L3_vec, L4_vec = [], [], [], [], []
+start = timer()
 for i in range(sampling_stages):
     
     # sample uniformly from the required regions
@@ -165,6 +167,8 @@ for i in range(sampling_stages):
                                 feed_dict = {t_interior_tnsr:t_interior, S_interior_tnsr:S_interior, t_terminal_tnsr:t_terminal, S_terminal_tnsr:S_terminal})
     loss_vec.append(loss); L1_vec.append(L1); L2_vec.append(L2); L3_vec.append(L3); L4_vec.append(L4)
     print(loss, L1, L2, L3, L4, i)
+end = timer()
+print("consumed time: " + str(end - start))
 pickle.dump(loss_vec, figureName+"_lossvec.pickle")
 pickle.dump(L1_vec, figureName+"_l1vec.pickle")
 pickle.dump(L2_vec, figureName+"_l2vec.pickle")
@@ -230,7 +234,7 @@ for i, curr_t in enumerate(valueTimes):
 plt.subplots_adjust(wspace=0.3, hspace=0.4)
 
 if saveFigure:
-    plt.savefig(figureName + '.png')
+    plt.savefig(figureName + '.png', dpi=1500)
     
 #%% Exercise boundary heatmap plot 
 # vector of t and S values for plotting
@@ -269,4 +273,4 @@ plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 
 if saveFigure:
-    plt.savefig(figureName + '_exerciseBoundary.png')
+    plt.savefig(figureName + '_exerciseBoundary.png', dpi=1500)
