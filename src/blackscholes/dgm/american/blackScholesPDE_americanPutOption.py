@@ -14,6 +14,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from timeit import default_timer as timer
 
+tf.random.set_random_seed(1)
+np.random.seed(1)
 #%% Parameters 
 
 # Option parameters
@@ -27,7 +29,8 @@ S0 = 50            # Initial price
 t_low = 0 + 1e-10    # time lower bound
 S_low = 0.0 + 1e-10  # spot price lower bound
 S_high = 2*K         # spot price upper bound
-domain = Domain1d(0, S_high, T)
+fd_S_high = 4*K
+domain = Domain1d(0, fd_S_high, T)
 pde_solver = Amer1d(domain, sigma, r, 0, K, -1)
 
 # Finite difference parameters
@@ -201,6 +204,8 @@ S_plot = np.linspace(S_low, S_high, n_plot)
 price = pde_solver.solve(Ngrids, Nsteps)
 t_idx = [0, Nsteps//3, 2*Nsteps//3, Nsteps]
 
+d = np.linspace(0, fd_S_high, Ngrids+1)
+legal_idx = d <= S_high
 for i, curr_t in enumerate(valueTimes):
     
     # specify subplot
@@ -214,7 +219,7 @@ for i, curr_t in enumerate(valueTimes):
     fitted_optionValue = sess.run([V], feed_dict= {t_interior_tnsr:t_plot, S_interior_tnsr:S_plot.reshape(-1,1)})
     
     # plot histogram of simulated process values and overlay estimated density
-    plt.plot(np.linspace(0, S_high, Ngrids+1), americanOptionValue, color = 'b', label='Finite differences', linewidth = 3, linestyle=':')
+    plt.plot(d[legal_idx], americanOptionValue[legal_idx], color = 'b', label='Finite differences', linewidth = 3, linestyle=':')
     plt.plot(S_plot, fitted_optionValue[0], color = 'r', label='DGM estimate')    
     
     # subplot options
@@ -246,7 +251,7 @@ americanOptionValue_mesh = np.zeros([n_plot, n_plot])
 
 for i in range(n_plot):
     for j in range(n_plot):
-        americanOptionValue_mesh[j, i] = pde_solver.evaluate(S_plot[j], T - t_plot[i])
+        americanOptionValue_mesh[j, i] = pde_solver.evaluate(S_plot[j], T - t_plot[i], 'linear')
     
 # compute model-implied American put option value for eact (t,S) pair
 t_mesh, S_mesh = np.meshgrid(t_plot, S_plot)

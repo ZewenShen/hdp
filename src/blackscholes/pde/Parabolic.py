@@ -39,10 +39,10 @@ class Solver1d:
         self.solution = solution
         return solution
     
-    def evaluate(self, X, t):
+    def evaluate(self, X, t, interp="cubic"):
         t_index = int(round(t/self.ht))
         domain = np.linspace(self.domain.a, self.domain.b, self.nx+1)
-        f = interpolate.interp1d(domain, self.solution[t_index], 'cubic')
+        f = interpolate.interp1d(domain, self.solution[t_index], interp)
         return f(X)
 
 class Solver1d_penalty(Solver1d):
