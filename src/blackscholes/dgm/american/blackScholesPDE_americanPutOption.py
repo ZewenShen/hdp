@@ -7,6 +7,7 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(__file__))+"/../../..")
 from blackscholes.pde.American import Amer1d
 from utils.Domain import Domain1d
+import utils.Pickle as pickle
 import DGM
 import tensorflow as tf
 import numpy as np
@@ -152,6 +153,7 @@ sess.run(init_op)
 
 #%% Train network
 # for each sampling stage
+loss_vec, L1_vec, L2_vec, L3_vec, L4_vec = [], [], [], [], []
 for i in range(sampling_stages):
     
     # sample uniformly from the required regions
@@ -159,9 +161,15 @@ for i in range(sampling_stages):
     
     # for a given sample, take the required number of SGD steps
     for _ in range(steps_per_sample):
-        loss,L1,L2,L3,L4,_ = sess.run([loss_tnsr, L1_tnsr, L2_tnsr, L3_tnsr, L4_tnsr, optimizer],
+        loss, L1, L2, L3, L4, _ = sess.run([loss_tnsr, L1_tnsr, L2_tnsr, L3_tnsr, L4_tnsr, optimizer],
                                 feed_dict = {t_interior_tnsr:t_interior, S_interior_tnsr:S_interior, t_terminal_tnsr:t_terminal, S_terminal_tnsr:S_terminal})
+    loss_vec.append(loss); L1_vec.append(L1); L2_vec.append(L2); L3_vec.append(L3); L4_vec.append(L4)
     print(loss, L1, L2, L3, L4, i)
+pickle.dump(loss_vec, figureName+"_lossvec.pickle")
+pickle.dump(L1_vec, figureName+"_l1vec.pickle")
+pickle.dump(L2_vec, figureName+"_l2vec.pickle")
+pickle.dump(L3_vec, figureName+"_l3vec.pickle")
+pickle.dump(L4_vec, figureName+"_l4vec.pickle")
 
 # save outout
 if saveOutput:

@@ -3,12 +3,29 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__))+"/../src")
 from blackscholes.utils.GBM import GBM
 from blackscholes.mc.Euro import Euro
 from blackscholes.mc.American import American
-from utils.Experiment import MCEuroExperiment, MCEuroExperimentStd
+from utils.Experiment import MCEuroExperiment, MCEuroExperimentStd, MCAmerExperimentStd
 import utils.Pickle as hdpPickle
 import unittest
 import numpy as np
 
 class Test(unittest.TestCase):
+
+    def test_amer_std(self):
+        # although this is not a euro experiment...
+        T = 1
+        strike = 50
+        asset_num = 1
+        init_price_vec = 50*np.ones(asset_num)
+        vol_vec = 0.5*np.ones(asset_num)
+        ir = 0.05
+        dividend_vec = np.zeros(asset_num)
+        corr_mat = np.eye(asset_num)
+        nTime = 365
+        random_walk = GBM(T, nTime, init_price_vec, ir, vol_vec, dividend_vec, corr_mat)
+        def test_payoff(*l):
+            return max(strike - np.sum(l), 0)
+        opt = American(test_payoff, random_walk)
+        MCAmerExperimentStd(10, 16, 30, opt)
 
     def test_amer(self):
         # although this is not a euro experiment...
@@ -20,14 +37,14 @@ class Test(unittest.TestCase):
         ir = 0.05
         dividend_vec = np.zeros(asset_num)
         corr_mat = np.eye(asset_num)
-        nTime = 100
+        nTime = 365
         random_walk = GBM(T, nTime, init_price_vec, ir, vol_vec, dividend_vec, corr_mat)
         def test_payoff(*l):
             return max(strike - np.sum(l), 0)
         opt = American(test_payoff, random_walk)
         analy = 8.723336355455928
         np.random.seed(1)
-        result = MCEuroExperiment(analy, 10, 17, opt, "V1")
+        result = MCEuroExperiment(analy, 10, 16, opt, "V1")
         hdpPickle.dump(result, 'MCAmer_1d.pickle')
         print(result)
 

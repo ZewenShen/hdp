@@ -123,3 +123,19 @@ def MCEuroExperimentStdHelper(N, path_num, MC_Euro):
         result3 = MC_Euro.priceV7(path_num) # antithetic
         ctrl.append(result3)
     return np.std(vanilla, ddof=1), np.std(anti, ddof=1), np.std(ctrl, ddof=1)
+
+def MCAmerExperimentStd(n_start, n_end, sim_times, MC_Amer):
+    print("N       Crude")
+    r = range(n_start, n_end)
+    N = 2**np.array(r)
+    for path_num in N:
+        std = MCEuroExperimentStdHelper(sim_times, path_num, MC_Amer)
+        print("{:d}    {:.2e}".format(int(np.log2(path_num)), std))
+
+def MCAmerExperimentStdHelper(N, path_num, MC_Amer):
+    vanilla = []
+    for n in range(N):
+        np.random.seed(n)
+        result = MC_Amer.priceV2(path_num)
+        vanilla.append(result)
+    return np.std(vanilla, ddof=1)
