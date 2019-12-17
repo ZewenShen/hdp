@@ -129,13 +129,13 @@ def MCAmerExperimentStd(n_start, n_end, sim_times, MC_Amer):
     r = range(n_start, n_end)
     N = 2**np.array(r)
     for path_num in N:
-        std = MCEuroExperimentStdHelper(sim_times, path_num, MC_Amer)
+        std = MCAmerExperimentStdHelper(sim_times, path_num, MC_Amer)
         print("{:d}    {:.2e}".format(int(np.log2(path_num)), std))
 
 def MCAmerExperimentStdHelper(N, path_num, MC_Amer):
     vanilla = []
     for n in range(N):
         np.random.seed(n)
-        result = MC_Amer.priceV2(path_num)
+        result = MC_Amer.price(path_num)
         vanilla.append(result)
     return np.std(vanilla, ddof=1)
