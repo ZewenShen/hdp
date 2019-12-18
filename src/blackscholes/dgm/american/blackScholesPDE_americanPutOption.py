@@ -34,8 +34,8 @@ domain = Domain1d(0, fd_S_high, T)
 pde_solver = Amer1d(domain, sigma, r, 0, K, -1)
 
 # Finite difference parameters
-Ngrids = 2000
-Nsteps = 500
+Ngrids = 1600
+Nsteps = 400
 
 # neural network parameters
 num_layers = 3
@@ -250,7 +250,7 @@ americanOptionValue_mesh = np.zeros([n_plot, n_plot])
 
 for i in range(n_plot):
     for j in range(n_plot):
-        americanOptionValue_mesh[j, i] = pde_solver.evaluateV2(S_plot[j], T - t_plot[i], 'linear')
+        americanOptionValue_mesh[j, i] = pde_solver.evaluate(S_plot[j], T - t_plot[i], 'linear')
     
 # compute model-implied American put option value for eact (t,S) pair
 t_mesh, S_mesh = np.meshgrid(t_plot, S_plot)

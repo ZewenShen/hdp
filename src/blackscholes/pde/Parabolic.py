@@ -11,6 +11,7 @@ class Solver1d:
     def __init__(self, p, q, r, f, domain):
         self.p, self.q, self.r, self.f = p, q, r, f
         self.domain = domain
+        self.interps = {}
 
     def solve(self, nx, nt):
         self.nx = nx
@@ -43,7 +44,10 @@ class Solver1d:
 
     def evaluate(self, X, t, interp="cubic"):
         t_index = int(round(t/self.ht))
+        if t_index in self.interps:
+            return self.interps[t_index](X)
         f = interpolate.interp1d(self.space_vec, self.solution[t_index], interp)
+        self.interps[t_index] = f
         return f(X)
 
     def evaluateV2(self, X, t, interp="linear"):
