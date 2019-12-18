@@ -227,3 +227,6 @@ Thesis: Described three types of low discrepancy methods and their implementatio
 
 # 12.3
 Implemented antithetic variates for n-d MC and added the discussion of it to the paper. Figure out the reason why DGM using Hessian is extremely slow: batch size too large. Took error from the boundary conditions of the PDE into consideration.
+
+# 12.10 and 12.17
+Conducted numerical experiments and finished the thesis.
