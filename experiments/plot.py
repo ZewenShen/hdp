@@ -1,8 +1,32 @@
+import sys, os
+sys.path.append(os.path.dirname(os.path.abspath(__file__))+"/../src")
 import matplotlib.pyplot as plt
 import unittest
 import numpy as np
+import utils.Pickle as pickle
 
 class Test(unittest.TestCase):
+
+    def test_plot_loss(self):
+        loss_vec = pickle.load("BlackScholes_AmericanPut1217_lossvec.pickle")
+        l1_vec = pickle.load("BlackScholes_AmericanPut1217_l1vec.pickle")
+        l2_vec = pickle.load("BlackScholes_AmericanPut1217_l2vec.pickle")
+        l3_vec = pickle.load("BlackScholes_AmericanPut1217_l3vec.pickle")
+        l4_vec = pickle.load("BlackScholes_AmericanPut1217_l4vec.pickle")
+        domain = np.arange(1, 3001)
+        all_vec = [domain, loss_vec, l1_vec, l2_vec, l3_vec, l4_vec]
+        for i in range(len(all_vec)):
+            all_vec[i] = all_vec[i][::50]
+        plt.plot(all_vec[0], all_vec[1], linewidth=2)
+        for i in range(2, len(all_vec)):
+            plt.plot(all_vec[0], all_vec[i], '--')
+        plt.legend(['Sum', 'L1', 'L2', 'L3', 'L4'])
+        plt.xlabel('Iterations')
+        plt.ylabel('Loss')
+        # plt.plot(domain, loss_vec, domain, l1_vec, domain, l2_vec, domain, l3_vec, domain, l4_vec)
+        plt.yscale('log')
+        plt.savefig("loss.png", dpi=1000)
+
 
     def test_6d_std(self):
         vanilla = np.array([7.91e-02, 5.17e-02, 3.66e-02, 2.45e-02, 1.78e-02,\
