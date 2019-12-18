@@ -52,7 +52,7 @@ nSim_terminal = 100
 S_multiplier  = 1.1   # multiplier for oversampling i.e. draw S from [S_low, S_high * S_multiplier]
 
 # Plot options
-n_plot = 100  # Points on plot grid for each dimension
+n_plot = 200  # Points on plot grid for each dimension
 
 # Save options
 saveOutput = False
@@ -190,7 +190,6 @@ plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 
 # figure options
-plt.figure()
 plt.figure(figsize = (12,10))
 
 # time values at which to examine density
@@ -251,7 +250,7 @@ americanOptionValue_mesh = np.zeros([n_plot, n_plot])
 
 for i in range(n_plot):
     for j in range(n_plot):
-        americanOptionValue_mesh[j, i] = pde_solver.evaluate(S_plot[j], T - t_plot[i], 'linear')
+        americanOptionValue_mesh[j, i] = pde_solver.evaluateV2(S_plot[j], T - t_plot[i], 'linear')
     
 # compute model-implied American put option value for eact (t,S) pair
 t_mesh, S_mesh = np.meshgrid(t_plot, S_plot)
@@ -264,7 +263,6 @@ optionValue_mesh = np.reshape(optionValue, [n_plot, n_plot])
 
 # plot difference between American and European options in heatmap and overlay 
 # exercise boundarycomputed using finite differences
-plt.figure()
 plt.figure(figsize = (8,6))
 
 plt.pcolormesh(t_mesh, S_mesh, np.abs(optionValue_mesh - americanOptionValue_mesh), cmap = "rainbow")
@@ -273,7 +271,7 @@ plt.pcolormesh(t_mesh, S_mesh, np.abs(optionValue_mesh - americanOptionValue_mes
 # plot options
 plt.colorbar()
 plt.ylabel("Spot Price", fontsize=15, labelpad=10)
-plt.xlabel("Time", fontsize=15, labelpad=20)
+plt.xlabel("Time", fontsize=15, labelpad=12)
 plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 

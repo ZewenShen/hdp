@@ -17,6 +17,8 @@ class Solver1d:
         hx, ht = self.domain.get_discretization_size(nx, nt); self.ht = ht
         self.time_vec = np.linspace(0, self.domain.T, nt+1)
         domain = np.linspace(self.domain.a, self.domain.b, nx+1)
+        self.space_vec = domain
+        self.ss, self.tt = np.meshgrid(self.space_vec, self.time_vec)
         X = domain[1:-1]
         solution = self.domain.ic(domain, 0)
         solution = np.reshape(solution, (1, -1))
@@ -38,12 +40,17 @@ class Solver1d:
             solution = np.vstack([solution, x])
         self.solution = solution
         return solution
-    
+
     def evaluate(self, X, t, interp="cubic"):
         t_index = int(round(t/self.ht))
-        domain = np.linspace(self.domain.a, self.domain.b, self.nx+1)
-        f = interpolate.interp1d(domain, self.solution[t_index], interp)
+        f = interpolate.interp1d(self.space_vec, self.solution[t_index], interp)
         return f(X)
+
+    def evaluateV2(self, X, t, interp="linear"):
+        # An efficient eval function for large amount of evaluations
+        if not hasattr(self, 'interp'):
+            self.interp = interpolate.interp2d(self.ss, self.tt, self.solution, interp)
+        return self.interp(X, t)
 
 class Solver1d_penalty(Solver1d):
 
@@ -52,6 +59,8 @@ class Solver1d_penalty(Solver1d):
         hx, ht = self.domain.get_discretization_size(nx, nt); self.ht = ht
         self.time_vec = np.linspace(0, self.domain.T, nt+1)
         domain = np.linspace(self.domain.a, self.domain.b, nx+1)
+        self.space_vec = domain
+        self.ss, self.tt = np.meshgrid(self.space_vec, self.time_vec)
         X = domain[1:-1]
         solution = self.domain.ic(domain, 0)
         solution = np.reshape(solution, (1, -1))
