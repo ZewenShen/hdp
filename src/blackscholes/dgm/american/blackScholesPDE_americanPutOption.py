@@ -238,7 +238,7 @@ for i, curr_t in enumerate(valueTimes):
 plt.subplots_adjust(wspace=0.3, hspace=0.4)
 
 if saveFigure:
-    plt.savefig(figureName + '.png', dpi=1500)
+    plt.savefig(figureName + '.png', dpi=1000)
     
 #%% Exercise boundary heatmap plot 
 # vector of t and S values for plotting
@@ -276,4 +276,4 @@ plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 
 if saveFigure:
-    plt.savefig(figureName + '_exerciseBoundary.png', dpi=1500)
+    plt.savefig(figureName + '_exerciseBoundary.png', dpi=1000)
