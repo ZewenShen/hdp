@@ -20,3 +20,6 @@ N-d antithetic variates; N-d control variates; N-d Sobol sequence; 1-d importanc
 
 #### Micellaneous (~/src/utils, ~/src/blackscholes/utils)
 The analytical solution to 1-d European option and N-d geometric average payoff European option; Helper functions for conducting numerical experiments
+
+## Reference
+Z. Shen, [Numerical Methods for High-Dimensional Option Pricing Problems](https://zewenshen.github.io/files/HDP_ZewenShen.pdf)
